@@ -1,0 +1,9 @@
+2011-12-13
+- added configuration for MIPS compiler
+- removed sysroot as not supported
+- compiled buildroot
+
+TODO
+- create specific FS for /copt without system or compare generated mediaplayer with e-boda FS
+- study openwrt FS usage
+

@@ -21,7 +21,9 @@ static char path[PATH_MAX] = BR_CROSS_PATH;
 
 static char *predef_args[] = {
 	path,
+#ifdef DO_NOT_USE
 	"--sysroot", BR_SYSROOT,
+#endif
 #ifdef BR_ARCH
 	"-march=" BR_ARCH,
 #endif /* BR_ARCH */
