@@ -1,0 +1,12 @@
+/arch.h/1.13/Fri Apr  8 18:58:40 2005/-ko/Tlinux_2_6_12
+/dma.h/1.3/Thu Jun  5 18:24:10 2003/-ko/Tlinux_2_6_12
+/flash.h/1.2/Mon Nov 15 11:49:38 2004/-ko/Tlinux_2_6_12
+/irda.h/1.1/Mon Dec 27 02:16:04 2004/-ko/Tlinux_2_6_12
+/irq.h/1.10/Tue Jan 25 04:28:53 2005/-ko/Tlinux_2_6_12
+/map.h/1.5/Fri Apr  8 18:58:40 2005/-ko/Tlinux_2_6_12
+/mmc.h/1.2/Mon Nov 15 11:49:38 2004/-ko/Tlinux_2_6_12
+/pci.h/1.11/Sun Sep 19 12:30:19 2004/-ko/Tlinux_2_6_12
+/serial_sa1100.h/1.4/Tue Oct 29 13:23:53 2002/-ko/Tlinux_2_6_12
+/sharpsl_param.h/1.1/Fri Apr  8 18:58:40 2005/-ko/Tlinux_2_6_12
+/time.h/1.3/Mon Oct 25 20:44:43 2004/-ko/Tlinux_2_6_12
+D

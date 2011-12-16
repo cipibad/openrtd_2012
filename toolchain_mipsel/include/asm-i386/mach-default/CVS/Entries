@@ -1,0 +1,22 @@
+/apm.h/1.1/Thu Jun  5 14:43:37 2003/-ko/Tlinux_2_6_12
+/bios_ebda.h/1.1/Thu Jun  5 14:43:37 2003/-ko/Tlinux_2_6_12
+/do_timer.h/1.4/Mon Oct 25 20:44:43 2004/-ko/Tlinux_2_6_12
+/entry_arch.h/1.1/Mon Jun  2 12:08:55 2003/-ko/Tlinux_2_6_12
+/io_ports.h/1.1/Thu Jun  5 14:43:37 2003/-ko/Tlinux_2_6_12
+/irq_vectors.h/1.5/Fri Apr 23 15:54:20 2004/-ko/Tlinux_2_6_12
+/irq_vectors_limits.h/1.2/Fri Aug  6 00:33:30 2004/-ko/Tlinux_2_6_12
+/mach_apic.h/1.12/Sat Jun 26 15:15:24 2004/-ko/Tlinux_2_6_12
+/mach_apicdef.h/1.1/Thu Jun  5 18:24:11 2003/-ko/Tlinux_2_6_12
+/mach_ipi.h/1.4/Tue Aug 24 15:10:15 2004/-ko/Tlinux_2_6_12
+/mach_mpparse.h/1.4/Thu Jun  5 18:24:11 2003/-ko/Tlinux_2_6_12
+/mach_mpspec.h/1.2/Sat Jun 26 15:15:24 2004/-ko/Tlinux_2_6_12
+/mach_reboot.h/1.1/Thu Jun  5 10:06:42 2003/-ko/Tlinux_2_6_12
+/mach_time.h/1.1/Thu Jun  5 14:43:37 2003/-ko/Tlinux_2_6_12
+/mach_timer.h/1.1/Thu Jun  5 14:43:37 2003/-ko/Tlinux_2_6_12
+/mach_traps.h/1.2/Fri Mar 18 17:38:07 2005/-ko/Tlinux_2_6_12
+/mach_wakecpu.h/1.1/Tue Jun  3 12:49:05 2003/-ko/Tlinux_2_6_12
+/pci-functions.h/1.1/Thu Jun  5 10:06:42 2003/-ko/Tlinux_2_6_12
+/setup_arch_post.h/1.2/Sat Jun 26 15:15:24 2004/-ko/Tlinux_2_6_12
+/setup_arch_pre.h/1.1/Mon Jun  2 12:08:55 2003/-ko/Tlinux_2_6_12
+/smpboot_hooks.h/1.2/Thu Jun  5 12:25:51 2003/-ko/Tlinux_2_6_12
+D
