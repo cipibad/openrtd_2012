@@ -1,0 +1,11 @@
+config BR2_PACKAGE_BTPD
+	bool "btpd"
+	help
+		Btpd is a utility for sharing files over the BitTorrent network protocol.
+		It runs in daemon mode, thus needing no controlling terminal or gui.
+		Instead, the daemon is controlled by btcli, its command line utility,
+		or other programs capable of sending commands and queries on the control
+		socket.
+			
+	
+		https://github.com/btpd/btpd
