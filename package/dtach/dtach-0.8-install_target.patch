@@ -1,0 +1,8 @@
+--- old/Makefile.in	2011-12-19 23:40:33.607658696 +0200
++++ new/Makefile.in	2011-12-19 23:41:04.143666446 +0200
+@@ -34,3 +34,5 @@
+ master.o: @srcdir@/master.c @srcdir@/dtach.h config.h
+ main.o: @srcdir@/main.c @srcdir@/dtach.h config.h
+ 
++install:
++	cp dtach $(DESTDIR)/usr/bin
