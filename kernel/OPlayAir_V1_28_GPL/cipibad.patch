@@ -1,0 +1,30 @@
+--- linux-2.6.12/scripts/kconfig/mconf.c       2010-06-10 12:08:20.000000000 +0300
++++ linux-custom/scripts/kconfig/mconf.c       2011-12-20 01:25:26.623659124 +0200
+@@ -21,6 +21,8 @@
+ #include <termios.h>
+ #include <unistd.h>
+
++#include <locale.h>
++
+ #define LKC_DIRECT_LINK
+ #include "lkc.h"
+
+--- linux-2.6.12/arch/mips/realtek-boards/generic/init.c	2011-12-20 01:52:16.379657230 +0200
++++ linux-custom/arch/mips/realtek-boards/generic/init.c	2011-12-20 01:52:55.444152138 +0200
+@@ -34,7 +34,6 @@
+ //#include <bonito64.h>
+ //#include <msc01_pci.h>
+ 
+-#include <linux/compile.h>
+ #include <venus.h>
+ #include <platform.h>
+ #include <linux/module.h>
+@@ -369,7 +368,7 @@
+ #endif
+ 
+ 	platform_info.update_mode = 0;
+-	sprintf(platform_info.kernel_source_code_info, "%s\n%s", LINUX_SOURCE_CODE_SVN, UTS_VERSION);
++	sprintf(platform_info.kernel_source_code_info, "%s\n%s", "cipibad", "0.1");
+ // It seems that we donot have bootup now.
+ //	parse_variable("uprev", platform_info.bootup_version, 4, "");
+ //	prom_printf("\tBootup version: %s\n", platform_info.bootup_version);
