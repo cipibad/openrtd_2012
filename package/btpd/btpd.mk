@@ -13,5 +13,5 @@ BTPD_CONF_ENV += CFLAGS+=-I$(TARGET_DIR)/usr/include LDFLAGS+=-L$(TARGET_DIR)/us
 #BTPD_CONF_OPT =
 BTPD_DEPENDENCIES = openssl
 
-$(eval $(call AUTOTARGETS,package,libfoo))
+$(eval $(call AUTOTARGETS,package,btpd))
 
