@@ -1,0 +1,11 @@
+--- mc-4.6.1-old/src/Makefile.in.orig	2011-12-21 01:19:01.857373277 +0200
++++ mc-4.6.1/src/Makefile.in	2011-12-21 01:19:28.497362602 +0200
+@@ -331,7 +331,7 @@
+ @CONS_SAVER_TRUE@AM_CPPFLAGS = -DDATADIR=\""$(pkgdatadir)/"\" -DLOCALEDIR=\""$(localedir)"\" \
+ @CONS_SAVER_TRUE@	-DLIBDIR=\""$(pkglibdir)"\"
+ 
+-man2hlp_LDADD = $(GLIB_LIBS)
++man2hlp_LDADD = $(GLIB_LIBS) -liconv
+ mcmfmt_SOURCES = mfmt.c
+ cons_saver_SOURCES = cons.saver.c
+ man2hlp_SOURCES = man2hlp.c glibcompat.c

@@ -1,0 +1,11 @@
+--- libcurl-7.21.7.old/src/Makefile.in	2011-12-21 00:49:48.825354179 +0200
++++ libcurl-7.21.7/src/Makefile.in	2011-12-21 00:50:26.037368519 +0200
+@@ -350,7 +350,7 @@
+ 	xattr.h
+ 
+ curl_SOURCES = $(CURL_CFILES) $(CURLX_ONES) $(CURL_HFILES)
+-curl_LDADD = $(top_builddir)/lib/libcurl.la @CURL_LIBS@
++curl_LDADD = $(top_builddir)/lib/libcurl.la @LIBCURL_LIBS@
+ curl_DEPENDENCIES = $(top_builddir)/lib/libcurl.la
+ BUILT_SOURCES = hugehelp.c
+ CLEANFILES = hugehelp.c

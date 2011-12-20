@@ -44,6 +44,9 @@ LIBGLIB2_CONF_ENV =	\
 		ac_cv_func_posix_getgrgid_r=no \
 		gt_cv_c_wchar_t=$(if $(BR2_USE_WCHAR),yes,no)
 
+LIBGLIB2_CONF_ENV += CFLAGS+="-I$(TARGET_DIR)/usr/include -I$(STAGING_DIR)/usr/include"  LDFLAGS+=-L$(TARGET_DIR)/usr/lib
+
+
 HOST_LIBGLIB2_CONF_OPT = \
 		--disable-gtk-doc \
 		--enable-debug=no \

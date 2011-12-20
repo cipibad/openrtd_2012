@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MC
+	bool "mc"
+	help
+
+                Midnight Commander is a file manager for free operating systems
+
+                http://www.gnu.org/s/mc/
