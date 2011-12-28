@@ -1,3 +1,11 @@
+2011-12-29
+ - kernel is ready for mini_fo
+ - to compete img generation
+TODOL
+ - add scripts/web_itf/cb3pp as separate repo/submodule
+ - add private_work as separate repo/submodule
+ - DO NOT REMOVE SVN !!!
+
 2011-12-13
 - added configuration for MIPS compiler
 - removed sysroot as not supported
