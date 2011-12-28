@@ -13,5 +13,5 @@ DTACH_INSTALL_TARGET = YES
 #DTACH_CONF_OPT =
 #DTACH_DEPENDENCIES = openssl
 
-$(eval $(call AUTOTARGETS,package,dtach))
+$(eval $(call AUTOTARGETS))
 
