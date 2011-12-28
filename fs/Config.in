@@ -11,5 +11,6 @@ source "fs/cpio/Config.in"
 source "fs/iso9660/Config.in"
 source "fs/initramfs/Config.in"
 source "fs/romfs/Config.in"
+source "fs/rtdimg/Config.in"
 
 endmenu
