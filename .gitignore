@@ -6,7 +6,7 @@
 /..config.tmp
 /.config
 *.depend
-*.o
+##*.o
 /*.patch
 /*.diff
 *.orig
