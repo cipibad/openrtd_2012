@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.12
-# Tue Mar 30 11:22:18 2010
+# Wed Jan 18 00:24:14 2012
 #
 CONFIG_MIPS=y
 
@@ -849,13 +849,14 @@ CONFIG_USB_STORAGE=y
 # CONFIG_USB_STORAGE_SDDR55 is not set
 # CONFIG_USB_STORAGE_JUMPSHOT is not set
 
+#
 # USB Input Devices
 #
 CONFIG_USB_HID=m
 CONFIG_USB_HIDINPUT=y
 # CONFIG_HID_FF is not set
 # CONFIG_USB_HIDDEV is not set
-                                                                                
+
 #
 # USB HID Boot Protocol drivers
 #
@@ -879,6 +880,7 @@ CONFIG_USB_MOUSE=m
 #
 # USB Multimedia devices
 #
+# CONFIG_USB_UVC is not set
 # CONFIG_USB_DABUSB is not set
 
 #
@@ -973,6 +975,7 @@ CONFIG_JBD=y
 # XFS support
 #
 # CONFIG_XFS_FS is not set
+CONFIG_MINI_FO=y
 # CONFIG_MINIX_FS is not set
 # CONFIG_ROMFS_FS is not set
 # CONFIG_QUOTA is not set
