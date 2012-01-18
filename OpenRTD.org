@@ -1,0 +1,78 @@
+
+
+
+* OpenRTD [0/4]
+  - [ ] New Packages [0/5]
+    - [ ] Streamind Feeds [0/4]
+      - [ ] vb6Scripts
+      - [ ] rssEx
+      - [ ] xLive
+      - [ ] xVod
+    - [ ] Web Control Panel
+    - [ ] Rss Control Panel
+    - [ ] nzbget
+    - [ ] opkg
+  - [ ] Opkg [0/1]
+    - [ ] buildroot offer option to create opkgs
+  - [ ] Control Panel [0/2]
+    - [ ] Web [0/6]
+      - [ ] mini_fo [0/3]
+	- [ ] show options
+	- [ ] create .mini_fo_overmount
+	- [ ] continue start-up script
+      - [ ] opkg [0/2]
+	- [ ] install package
+	- [ ] update
+      - [ ] phpfm
+      - [ ] transmission [0/3]
+	- [ ] start/stop/enable/disable
+	- [ ] configedit via php
+	- [ ] webItfLink
+      - [ ] rclocal editor
+      - [ ] timezone,ntp
+    - [ ] RSS [0/5]
+      - [ ] mini_fo
+      - [ ] opkg [0/2]
+	- [ ] install package
+	- [ ] update
+      - [ ] transmission [0/1]
+	- [ ] start/stop/enable/disable
+      - [ ] sleep
+	- [ ] smarted menu
+	- [ ] video/audio rendered patch
+      - [ ] timezone,ntp
+  - [ ] Scripting [0/2]
+    - [ ] Firmware patching [0/5]
+      - [ ] IMS patch
+	(linked with Streaming feeds & lighttpd & php)
+      - [ ] Kernel
+      - [ ] Filesystem
+      - [ ] Weather patch
+      - [ ] install_a patch
+    - [ ] Startup [0/2]
+      - [ ] wait something in /tmp/ramfs/volumes
+      - [ ] if something found, check .mini_fo_overmount [0/4]
+	- [ ] if found, do overmount
+	- [ ] mark overmount on-going
+	- [ ] pivot_root
+	- [ ] startapps
+
+
+
+
+    -i PATH \t\t\t path to an install.img file
+    -v [500mini|500|500plus] \t version from where we are using/overwriting some files
+    -a [eboda|mede8er] \t\t overwrite install_a file with the one from specified firmware
+    -m [eboda|acryan|oplay|egreat] \t overwrite the menu.rss file with the one from specified firmware
+    -n \t\t\t move menu,rss to a read-write location
+    -d [eboda] \t\t\t overwrite menu.rss with one containing DS stuff
+    -b PATH \t\t\t overwrite root filesystem with binaries from PATH (old)
+    -c \t\t\t install cb3pp binaries
+    -w \t\t\t install web controlpanel
+    -e \t\t\t patch weather files
+    -r crypt rss menu
+    -h \t\t\t\t this info
+    -k PATH \t\t use new kernel from PATH
+    -r PATH rsync target binaries
+    ';
+}
