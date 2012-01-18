@@ -1,4 +1,5 @@
 
+This is OpenRTD project aiming a simple environment to patch any RTD1073 firmware and make it a easy to use Linux device
 
 
 * OpenRTD [0/4]
@@ -60,19 +61,3 @@
 
 
 
-    -i PATH \t\t\t path to an install.img file
-    -v [500mini|500|500plus] \t version from where we are using/overwriting some files
-    -a [eboda|mede8er] \t\t overwrite install_a file with the one from specified firmware
-    -m [eboda|acryan|oplay|egreat] \t overwrite the menu.rss file with the one from specified firmware
-    -n \t\t\t move menu,rss to a read-write location
-    -d [eboda] \t\t\t overwrite menu.rss with one containing DS stuff
-    -b PATH \t\t\t overwrite root filesystem with binaries from PATH (old)
-    -c \t\t\t install cb3pp binaries
-    -w \t\t\t install web controlpanel
-    -e \t\t\t patch weather files
-    -r crypt rss menu
-    -h \t\t\t\t this info
-    -k PATH \t\t use new kernel from PATH
-    -r PATH rsync target binaries
-    ';
-}
