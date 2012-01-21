@@ -13,5 +13,4 @@
 *.rej
 *~
 firmware/
-fs/rtdimg/
 support/scripts/firmware

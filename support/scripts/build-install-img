@@ -1,0 +1,880 @@
+#!/bin/sh
+
+#
+# Checking if everything is available
+# 
+# @param path to image file
+# @return 0 if OK, error code otherwise
+#
+check_prequisites()
+{
+
+    IMAGE_FILE=$1;
+    RTDMOD_DIR=$2;    
+# check source file
+    if [ ! -f ${IMAGE_FILE} ]; then  echo "Original install.img not found (${IMAGE_FILE})";  exit 10; fi
+    echo "File ${IMAGE_FILE} found";
+    
+#cheking yaffs tools
+    if [ ! -f ${RTDMOD_DIR}/bin/unyaffs ]; then  echo "${RTDMOD_DIR}/bin/unyaffs not found" &&  exit 20; fi
+    if [ ! -f ${RTDMOD_DIR}/bin/mkyaffs2image ]; then echo "${RTDMOD_DIR}/bin/mkyaffs2image not found" &&  exit 30; fi
+    echo "yaffs tools are present";
+
+
+#cheking squashfs tools;
+    if [ ! -f ${RTDMOD_DIR}/bin/unsquashfs ]; then echo "${RTDMOD_DIR}/bin/unsquashfs not found" &&  exit 40; fi
+    if [ ! -f ${RTDMOD_DIR}/bin/mksquashfs ]; then echo "${RTDMOD_DIR}/bin/mksquashfs not found" &&  exit 50; fi
+    echo "squashfs tools are present";
+
+#cheking tea;
+    #TODO if [ !  -f ${RTDMOD_DIR}/bin/tea ]; then echo "${RTDMOD_DIR}/bin/tea not found" &&  exit 60; fi
+    echo "tea is present";
+
+    return 0;
+}
+
+#
+# Unpack img
+# 
+# @param path to image file
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+#
+unpack_img()
+{
+    IMAGE_FILE=$1;
+    OUT_DIR=$2;
+    cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+    tar xf ${IMAGE_FILE};if [ $? -ne 0 ]; then  echo "Cannot unpack image ${IMAGE_FILE}"; exit 120; fi
+    echo "File install.img unpacked in ${OUT_DIR}";
+    return 0;
+}
+
+#
+# Unpack root image
+# 
+# @param path to dir containing root image
+# @param path to output dir
+# @param TEA key
+# @return 0 if OK, error code otherwise
+#
+unpack_root()
+{
+    PACKAGE2_DIR=$1;
+    OUT_DIR=$2;
+    KEY=$3;
+    
+    if [ -f ${PACKAGE2_DIR}/squashfs1.upg ]
+    then
+	echo "We have encrypted squashfs image, decrypting";
+	tea -d -i ${PACKAGE2_DIR}/squashfs1.upg -o ${PACKAGE2_DIR}/squashfs1.img -k ${KEY}
+ 	if [ $? -ne 0 ]; then echo "Cannot decrypt ${PACKAGE2_DIR}/squashfs1.upg"; exit 210; fi
+	echo "Squashfs image decrypted";
+    fi
+    
+    if [ -f ${PACKAGE2_DIR}/squashfs1.img ]
+    then
+	echo "We have squashfs image, unpacking in ${OUT_DIR}";
+	${RTDMOD_DIR}/bin/unsquashfs -d  ${OUT_DIR} ${PACKAGE2_DIR}/squashfs1.img;
+ 	if [ $? -ne 0 ]; then echo "Cannot unpack squashfs image"; exit 230; fi
+	echo "Squashfs image unpacked";
+    fi
+    if [ -f ${PACKAGE2_DIR}/yaffs2_1.img ]
+    then
+	if [ ! -d ${OUT_DIR} ]; then mkdir ${OUT_DIR}; fi
+	cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+	${RTDMOD_DIR}/bin/unyaffs ${PACKAGE2_DIR}/yaffs2_1.img;
+ 	if [ $? -ne 0 ]; then echo "Cannot unpack yaffs image"; exit 250; fi
+	cd -
+	echo "Yaffs image unpacked";
+    fi
+    return 0;
+}
+
+#
+# Patch root image
+# 
+# @param path to dir containing root image
+# @return 0 if OK, error code otherwise
+#
+patch_root()
+{
+    ROOT_DIR=$1;
+    UPDATE_BINARIES=$2;
+
+    echo "Patching root in ${ROOT_DIR}"
+    cd ${ROOT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${ROOT_DIR} not found"; exit 310; fi
+    
+    echo -n 'Creating overmount directories ...'
+#make root directories for overmounts
+    rm -f opt; #some firmwares have a symlink here
+
+    rm -f media; #some firmwares have a symlink here
+    mkdir media; 
+
+
+    mkdir cb3pp; # cb3pp directory for cipibad apps
+    mkdir ewcp; # ewcp directory for web/rss control panel interface
+    mkdir opt; # and opt for other people to play
+
+    mkdir rss_ex; ln -s ../etc/translate/rss usr/local/bin/rss; # and rss_ex requirements
+    mkdir xVoD; #xVoD streaming scripts
+    mkdir scripts; # vb6 streaming scripts
+    mkdir xLive; # xLive streaming scripts
+
+
+    mkdir utilities; # who knows ... just better be there
+    echo 'done'
+    
+#add root home in passwd
+    echo -n 'Adding root home in passwd ...'
+    sed -i -e '/^root/c\
+root::0:0:root:/usr/local/etc/root:/bin/sh' etc/passwd;
+    echo 'done'
+
+#patch samba script to export both HDD partitions and all mounts (USB?)
+    echo -n 'Patching samba startup scripts ...'
+
+    if [ -f usr/local/bin/package/script/configsamba ]
+    then
+	sed -i -e '/\/tmp\/package\/script\/samba-security/i\
+addmountpointtosambaconf ext3 /tmp/hdd/root/' usr/local/bin/package/script/configsamba;
+	
+	sed -i -e '/mountpoint=$(cat \/proc\/mounts|grep $l |cut -d" " -f 2)/c\
+mountpoint=$(cat /proc/mounts|grep $l | head -n 1 | cut -d" " -f 2)' usr/local/bin/package/script/configsamba;
+    fi
+    echo 'done'
+
+#sometimes we used to replace ttf font to get some space
+#seems noot needed after changing to squashfs
+# just keep it here some more time for refference
+#    cp  ${SVN_REPO}/src/${SIMPLE_VERSION}/Resource/*.TTF usr/local/bin/Resource 
+
+
+#prepare timezone modification in system profile
+    echo -n '/etc/profile for timezone ...'
+    sed -i -e '/export TZ=CST+0:00:00/a\
+if [ -f /usr/local/etc/TZ ]\
+then\
+. /usr/local/etc/TZ\
+fi' etc/profile;
+    echo 'done'
+
+
+#setting default IP address in case DvdPlayer not starting
+    echo -n 'Setting default IP address ...'
+    echo 'ifconfig eth0 192.168.1.2 netmask 255.255.0.0
+' >> etc/init.d/rcS
+    echo 'done'
+
+
+#shutdown script
+    echo -n 'Creating and hooking shutdown script ...'
+    cat > etc/init.d/rcK <<EOF
+#!/bin/sh
+[ -f /usr/local/etc/rcK ] && /usr/local/etc/rcK>/dev/console
+/bin/umount -a -r
+/sbin/swapoff -a
+EOF
+    chmod +x etc/init.d/rcK
+
+    sed -i -e '1a\
+[ -f /usr/local/etc/rcK ] && /usr/local/etc/rcK' usr/sbin/pppoe-stop
+    echo 'done'
+
+    if [ "X${UPDATE_BINARIES}" != "X" ]
+    then
+
+	cat > etc/inittab <<EOF
+#If no inittab is found, it has the following default behavior
+::sysinit:/etc/init.d/rcS
+::askfirst:/bin/sh
+#If it detects that /dev/console is _not_ a serial console, it will also run
+# not needed
+# tty::askfirst:/bin/sh
+# Stuff to do before rebooting
+::shutdown:/etc/init.d/rcK
+::restart:/sbin/init
+EOF
+
+
+#TODO update busybox
+	echo -n 'Updating busybox ...'
+	cp ${SVN_REPO}/src/bin/busybox.1.18.4 sbin/
+	if [ $? -ne 0 ]
+	then
+	    echo "CANNOT FIND SVN REPO";
+	    exit 5;
+	fi
+	chmod +x sbin/busybox.1.18.4
+
+	rm sbin/init
+	ln -s ../sbin/busybox.1.18.4 sbin/init
+
+	[ -f sbin/httpd ] && rm sbin/httpd
+	ln -s ../sbin/busybox.1.18.4 sbin/httpd
+
+	[ -f etc/httpd.conf ] && rm etc/httpd.conf
+
+	echo 'done'
+    fi #UPDATE_BINARIES
+
+# eboda web control panel
+    if [ "X${INSTALL_WEB_CONTROL_PANEL}" != "X" ]
+    then
+	dir=`pwd`
+	cd ${SVN_REPO}/www/
+	find ewcp | grep -v .svn | grep -v '~' | zip -9 ${dir}/ewcp4.zip -@
+	cp ewcp4-version.txt ${dir}/
+	cd $dir
+    fi
+
+# /cb3pp
+    if [ "X${INSTALL_CB3PP_BINARIES}" != "X" ]
+    then
+	dir=`pwd`
+	cd ${SVN_REPO}/src/
+	find cb3pp | grep -v .svn | grep -v '~'  | zip -9 ${dir}/cb3pp4.zip -@
+	cp cb3pp4-version.txt ${dir}/
+	cd $dir
+    fi
+
+    if [ "X${MOVE_MENU_RSS}" != "X" ]
+    then
+	rm -rf /tmp/scripts
+	mv usr/local/bin/scripts /tmp
+	ln -s ../etc/scripts usr/local/bin/scripts 
+	echo 'Moving menu.rss part 1'
+    fi
+
+#TODO; 
+#FIXME:
+#binary patch some specifig software
+
+
+
+
+
+}
+
+patch_root_ims_menu()
+{
+
+    MENU_RSS=$1;
+
+
+
+    if [ "X${MOVE_MENU_RSS}" = "X" ]
+    then
+	
+	cp ${SVN_REPO}/src/${VERSION}/menu/menu.rss_sdk3 usr/local/bin/scripts/menu.rss
+	echo "Using eboda menu from ${SVN_REPO}/src/${VERSION}/menu/menu.rss_sdk3"
+	
+	[ -d usr/local/bin/scripts/image ] || mkdir -p usr/local/bin/scripts/image
+	cp ${SVN_REPO}/src/${VERSION}/menu/image/* usr/local/bin/scripts/image/
+	
+	echo "Using eboda menu images from ${SVN_REPO}/src/${VERSION}/menu/image"
+    fi
+
+
+
+#media translate
+# no space in firmware, latest version will be downloaded from internet
+dir=`pwd`
+cd ${SVN_REPO}/scripts/feeds/zero_version/rss_ex/
+find rss_ex/ | grep -v .svn | grep -v '~' | zip -9 ${dir}/rss_ex4.zip -@
+cp rss_ex4-version.txt ${dir}/rss_ex4-version.txt
+cd ${dir}
+
+
+dir=`pwd`
+cd ${SVN_REPO}/scripts/feeds/zero_version/xVoD/
+find xVoD/ | grep -v .svn | grep -v '~' | zip -9 ${dir}/xVoD4.zip -@
+cp xVoD4-version.txt ${dir}/xVoD4-version.txt
+cd ${dir}
+
+# vb6 scripts
+# no space in firmware, latest version will be downloaded from internet
+dir=`pwd`
+cd ${SVN_REPO}/scripts/feeds/zero_version/scripts_vb6/
+find scripts | grep -v .svn | grep -v '~' | zip -9 ${dir}/scripts4.zip -@
+cp scripts4-version.txt ${dir}/scripts4-version.txt
+cd ${dir}
+
+xLive
+#out because no space.
+#I should make script to take-it from internet!
+#dir=`pwd`
+cd ${SVN_REPO}/scripts/feeds/zero_version/xLive
+find xLive | grep -v .svn | grep -v '~' | zip -9 ${dir}/xLive4.zip -@
+cp xLive4-version.txt ${dir}/xLive4-version.txt
+cd ${dir}
+
+
+#new http services
+    echo -n 'Patching /etc/services and /etc/inet.d ...'
+##inetd.conf
+    sed -i -e '$a\
+www-scripts    stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /scripts\
+www-rssEx      stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /rss_ex/www\
+www-xLive      stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /xLive' etc/inetd.conf
+# fi
+
+   sed -i -e 's/#telnet/telnet/' etc/inetd.conf
+
+#services.conf
+    sed -i -e '$a\
+http3           83/tcp          www-scripts www-scripts-http  # HyperText Transfer Protocol\
+http4           84/tcp          www-rssEx www-rssEx-http  # HyperText Transfer Protocol\
+http5           85/tcp          www-xLive www-xLive-http  # HyperText Transfer Protocol' etc/services
+echo 'done'
+
+
+}
+
+
+patch_root_ims_weather()
+{
+
+    cp ${SVN_REPO}/src/${VERSION}/map/* usr/local/bin/IMS_Modules/Weather/scripts/map/
+
+}
+
+copy_target_binaries()
+{
+    echo "Copying files from ${TARGET_BINARIES_SRC} to root"
+    rsync -a --ignore-existing ${TARGET_BINARIES_SRC}/* .
+    #rsync -a --exclude lib/modules ${TARGET_BINARIES_SRC}/* .
+    
+}
+
+patch_root_ims_menu_ds()
+{
+    MENU_RSS_DS=$1;
+
+    if [ "X${MOVE_MENU_RSS}" = "X" ]
+    then
+	
+	if [ "X${CRYPT_RSS_MENU}" = "X" ]
+	then
+	    cp ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS} usr/local/bin/scripts/menu.rss
+	    echo "Using not encrypted DS menu"
+	else
+	    $OPENSSL_CMD -in ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS} -out usr/local/bin/scripts/menu.rss
+	    echo "Ecrypting DS menu"
+	fi
+	echo "Using DS menu from ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS}"
+
+	[ -d usr/local/bin/scripts/DSRoot/ ] || mkdir -p usr/local/bin/scripts/DSRoot/
+
+	for i in `ls -1 ${GIT_REPO}/dsp/rss/*.rss | sed -e 's#.*/##'`
+	do 
+	if [ "X${CRYPT_RSS_MENU}" = "X" ]
+	then
+	    cp  ${GIT_REPO}/dsp/rss/$i usr/local/bin/scripts/DSRoot/$i
+	else
+	    $OPENSSL_CMD -in ${GIT_REPO}/dsp/rss/$i -out usr/local/bin/scripts/DSRoot/$i
+	fi
+	done
+
+	cp ${GIT_REPO}/dsp/rss/*jpg usr/local/bin/scripts/DSRoot/
+	
+    fi
+
+	[ -d usr/local/bin/DSRoot/defaultroot ] || mkdir -p usr/local/bin/DSRoot/defaultroot
+	cp -a ${GIT_REPO}/dsp/rss/defaultroot/* usr/local/bin/DSRoot/defaultroot
+
+	echo "Using eboda menu images from ${SVN_REPO}/src/${VERSION}/menu/image"
+
+
+
+
+}
+
+
+#
+# Pack root image
+# 
+# @param path to dir containing root image
+# @param path to output dir
+# @param TEA key
+# @return 0 if OK, error code otherwise
+#
+pack_root()
+{
+    PACKAGE2_DIR=$1;
+    IN_DIR=$2;
+    KEY=$3;
+    echo "Packing root now from ${IN_DIR} to ${PACKAGE2_DIR}"
+    if [ -f ${PACKAGE2_DIR}/squashfs1.img ]
+    then
+	echo "Found squashfs1.img, creating filesystem"
+	rm ${PACKAGE2_DIR}/squashfs1.img
+	cd ${IN_DIR} 
+	${RTDMOD_DIR}/bin/mksquashfs * ${PACKAGE2_DIR}/squashfs1.img -b 65536 -no-progress
+ 	if [ $? -ne 0 ]; then echo "Cannot create squashfs1.img"; exit 300; fi
+	echo "squashfs1.img created"
+	if [ -f ${PACKAGE2_DIR}/squashfs1.upg ]
+	then
+	    echo "Found squashfs1.img, crypting filesystem"
+	    rm ${PACKAGE2_DIR}/squashfs1.upg;
+	    ${RTDMOD_DIR}/bin/tea -e -i ${PACKAGE2_DIR}/squashfs1.img -o ${PACKAGE2_DIR}/squashfs1.upg -k ${KEY}
+ 	    if [ $? -ne 0 ]; then echo "Cannot encrypt ${PACKAGE2_DIR}/squashfs1.upg"; exit 300; fi
+	    rm ${PACKAGE2_DIR}/squashfs1.img;
+	    echo "squashfs1.upg crypted"
+	fi
+    fi
+    if [ -f ${PACKAGE2_DIR}/yaffs2_1.img ]
+    then
+	echo "We have yaffs image, packing";
+	rm ${PACKAGE2_DIR}/yaffs2_1.img
+	${RTDMOD_DIR}/bin/mkyaffs2image ${IN_DIR} ${PACKAGE2_DIR}/yaffs2_1.img
+ 	if [ $? -ne 0 ]; then echo "Cannot create yaffs2_1.img"; exit 300; fi
+    fi
+    return 0;
+}
+
+
+
+#
+# Unpack /usr/local/etc image
+# 
+# @param path to dir containing image
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+unpack_etc()
+{
+    PACKAGE2_DIR=$1;
+    OUT_DIR=$2;
+    echo "Unpacking ${PACKAGE2_DIR}/usr.local.etc.tar.bz2 to ${IN_DIR}"
+    cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+    tar jxf ${PACKAGE2_DIR}/usr.local.etc.tar.bz2
+    echo "Unpacking finished"
+}
+
+patch_etc()
+{
+    ETC_DIR=$1;
+    echo "Pathing etc dir in ${ETC_DIR}"
+    cd ${ETC_DIR}; if [ $? -ne 0 ]; then "Out dir ${ETC_DIR} not found"; exit 110; fi
+#make home for root
+    mkdir root
+    echo 'PATH=/cb3pp/bin:$PATH
+TERM=xterm
+export PATH TERM' >  root/.profile
+    
+#rss_ex
+    ln -s  /rss_ex translate
+
+#cipibad start-up script
+    echo '#!/bin/sh
+
+#use custom pattern if available (so user can decide where to unpack stuff)
+if [ -f /usr/local/etc/use_storage ]
+then
+    mount_pattern=`cat /usr/local/etc/use_storage`
+else
+    mount_pattern=scsi
+fi
+
+#now wait for 30*3 seconds to get storage mounted
+n=1; mount | grep ${mount_pattern};
+while [ $? -ne 0 ] ; do
+    sleep 3
+    [ $n -gt 30 ] && break
+    let n+=1
+    echo "#waiting for hdd.."
+    mount | grep ${mount_pattern}
+done
+
+if [ $n -gt 30 ]
+then
+    echo no storage found, nothing to do ...
+else
+#storage online !! go go go
+
+#choose curent storage
+    storage=`mount | grep ${mount_pattern} | tr -s " " | cut -d " " -f 3 | head -n 1`
+
+#remount storage RW (needed for some USB devices)
+    mount -o rw,remount $storage
+    storage="$storage/mediaplayer_extras"
+    echo "storage=$storage" > /usr/local/etc/storage
+    
+#check if overmount dirs present 
+    [ -d ${storage} ] || mkdir ${storage}
+    for i in cb3pp scripts rss_ex xVoD ewcp xLive
+    do
+      if [ -f  /${i}4.zip ]
+      then
+	[ -d ${storage}/${i} ] || mkdir ${storage}/${i}
+	if [ ! -f /${i}/.overmounted ];then
+	    mount -o bind ${storage}/${i} /${i}
+	    touch /${i}/.overmounted
+	fi
+	SERIAL=0
+	[ -f ${storage}/${i}4-version.txt ] && . ${storage}/${i}4-version.txt
+	DISK_SERIAL=${SERIAL}
+	[ -f /${i}4-version.txt ] && . /${i}4-version.txt
+	if [ ${SERIAL} -gt ${DISK_SERIAL} -o ${SERIAL} -eq 0 ]
+	then
+            rm -rf ${storage}/$i/*
+            cd ${storage}
+            unzip -o /${i}4.zip
+	    cp /${i}4-version.txt ${storage}/${i}4-version.txt
+	fi
+      fi
+    done
+
+    cb3pp_startup=/cb3pp/etc/init.d/rcS 
+    
+# standard startup
+    [ -f $cb3pp_startup ] && /bin/sh $cb3pp_startup $1
+fi
+'>> rccb3ppS
+    chmod +x rccb3ppS
+
+#addind my startup to standard startup procedure
+    echo '
+    [ -f /usr/local/etc/rccb3ppS ] && sh /usr/local/etc/rccb3ppS start &' >> rcS
+
+
+#system shutdown script
+    cat > rcK <<EOF
+#!/bin/sh
+[ -f /usr/local/etc/rccb3ppK ] && sh /usr/local/etc/rccb3ppK 
+EOF
+chmod +x rcK
+
+#cb3pp shutdown script
+cat > rccb3ppK <<EOF
+#!/bin/sh
+
+# standard stop
+[ -f /cb3pp/etc/init.d/rcS ] && /bin/sh /cb3pp/etc/init.d/rcS stop
+EOF
+chmod +x rccb3ppK
+
+#timezone ... to be updated from Web ITF
+cat > TZ <<EOF
+export TZ=GMT-3
+EOF
+
+if [ "X${MOVE_MENU_RSS}" != "X" ]
+then
+    mv /tmp/scripts .
+    echo 'Moving menu.rss part 2'
+fi
+
+
+echo 'done'
+
+}
+
+
+patch_etc_ims_menu()
+{
+
+#FIXME
+# I do-it fast now to have movies for Dana and cartoon for kind tomorrow-today
+    MENU_RSS=$1;
+    if [ "X${MOVE_MENU_RSS}" != "X" ]
+    then
+	
+	cp ${SVN_REPO}/src/${VERSION}/menu/menu.rss_sdk3 scripts/menu.rss
+	echo "Using eboda menu from ${SVN_REPO}/src/${VERSION}/menu/menu.rss_sdk3"
+	
+	[ -d scripts/image ] || mkdir -p scripts/image
+	cp ${SVN_REPO}/src/${VERSION}/menu/image/* scripts/image/
+	
+	echo "Using eboda menu images from ${SVN_REPO}/src/${VERSION}/menu/image"
+    fi
+
+}
+
+
+
+patch_etc_ims_menu_ds()
+{
+    MENU_RSS_DS=$1;
+
+    if [ "X${MOVE_MENU_RSS}" != "X" ]
+    then
+	if [ "X${CRYPT_RSS_MENU}" = "X" ]
+	then
+	    cp ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS} scripts/menu.rss
+	    echo "Using not encrypted DS menu"
+	else
+	    $OPENSSL_CMD -in ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS} -out scripts/menu.rss
+	    echo "Ecrypting DS menu"
+	fi
+	echo "Using DS menu from ${GIT_REPO}/dsp/scripts/menu.rss.${MENU_RSS_DS}"
+	
+	[ -d scripts/DSRoot/ ] || mkdir -p scripts/DSRoot/
+	for i in `ls -1 ${GIT_REPO}/dsp/rss/*.rss | sed -e 's#.*/##'`
+	do 
+	    if [ "X${CRYPT_RSS_MENU}" = "X" ]
+	    then
+		cp ${GIT_REPO}/dsp/rss/$i scripts/DSRoot/$i
+	    else
+		$OPENSSL_CMD -in ${GIT_REPO}/dsp/rss/$i -out scripts/DSRoot/$i
+	    fi
+	done
+
+	cp ${GIT_REPO}/dsp/rss/*jpg scripts/DSRoot/
+
+    fi
+
+
+}
+
+
+# pack /usr/local/etc image
+# 
+# @param path to dir containing image
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+pack_etc()
+{
+    PACKAGE2_DIR=$1;
+    IN_DIR=$2;
+    echo "Packing ${IN_DIR} to ${PACKAGE2_DIR}/usr.local.etc.tar.bz2"
+    cd ${IN_DIR} || ( echo "Out dir ${IN_DIR} not found" &&  exit 110 );
+    rm ${PACKAGE2_DIR}/usr.local.etc.tar.bz2
+    tar jcf ${PACKAGE2_DIR}/usr.local.etc.tar.bz2 *
+    echo "Packing finished"
+}
+
+patch_image()
+{
+    IMAGE_DIR=$1;
+#updade install_a if the case
+
+#patch size in configuration.xml
+
+#patch img name .. not sure
+#sed -i -e 's#package2/squashfs1.upg#package2/squashfs1.img#g' configuration.xml  
+
+}
+
+update_kernel()
+{
+    cp ${UPDATE_KERNEL}/vmlinux.bin ${PACKAGE2_DIR}/vmlinux.develop.avhdd.mars.nand.bin
+    if [ $? -ne 0 ]; then echo "Error updating kernel";
+    else echo "Kernel updated OK";
+    fi
+
+}
+
+pack_img()
+{
+    IMAGE_FILE=$1;
+    IN_DIR=$2;
+    echo "Packing ${IN_DIR} to ${IMAGE_FILE}"
+    cd ${IN_DIR}; if [ $? -ne 0 ]; then echo "In dir ${IN_DIR} not found"; exit 110; fi
+    tar cf ${IMAGE_FILE} * ; if [ $? -ne 0 ]; then  echo "Cannot pack image ${IMAGE_FILE}"; exit 120; fi
+    echo "Packing finished"
+    return 0;
+
+}
+
+
+usage()
+{
+    echo 'Usage: patch.sh -i PATH -v [500mini|500|500plus] [-a [eboda|mede8er]] [-m [eboda|acryan|oplay|egreat]] [-d eboda]
+
+    Patches an original Realtek based mediaplayer firmware.
+    Full description of script is here: http://URL_TO_DO
+
+    Arguments:
+
+    -i PATH \t\t\t path to an install.img file
+    -v [500mini|500|500plus] \t version from where we are using/overwriting some files
+    -a [eboda|mede8er] \t\t overwrite install_a file with the one from specified firmware
+    -m [eboda|acryan|oplay|egreat] \t overwrite the menu.rss file with the one from specified firmware
+    -n \t\t\t move menu,rss to a read-write location
+    -d [eboda] \t\t\t overwrite menu.rss with one containing DS stuff
+    -b PATH \t\t\t overwrite root filesystem with binaries from PATH (old)
+    -c \t\t\t install cb3pp binaries
+    -w \t\t\t install web controlpanel
+    -e \t\t\t patch weather files
+    -r crypt rss menu
+    -h \t\t\t\t this info
+    -k PATH \t\t use new kernel from PATH
+    -r PATH rsync target binaries
+    ';
+}
+
+parse_args()
+{
+
+
+while true ; do
+	case "$1" in
+		-a|--a-long) echo "Option a" ; shift ;;
+		-b|--b-long) echo "Option b, argument \`$2'" ; shift 2 ;;
+		-c|--c-long) 
+			# c has an optional argument. As we are in quoted mode,
+			# an empty parameter will be generated if its optional
+			# argument is not found.
+			case "$2" in
+				"") echo "Option c, no argument"; shift 2 ;;
+				*)  echo "Option c, argument \`$2'" ; shift 2 ;;
+			esac ;;
+		--) shift ; break ;;
+		*) echo "Internal error!" ; exit 1 ;;
+	esac
+done
+echo "Remaining arguments:"
+for arg do echo '--> '"\`$arg'" ; done
+
+    while getopts "i:v:a:m:d:t:k:bcwhner" opt; do
+	case $opt in
+	    i)
+		INSTALL_IMG="$OPTARG";
+		;;
+	    v)
+		VERSION="$OPTARG";
+		;;
+	    a)
+		INSTALL_A="$OPTARG";
+		;;
+	    m)
+		MENU_RSS="$OPTARG";
+		;;
+	    n)
+		MOVE_MENU_RSS="1";
+		;;
+	    d)
+		MENU_RSS_DS="$OPTARG";
+		;;
+	    b)
+		UPDATE_BINARIES="1";
+		;;
+	    c)
+		INSTALL_CB3PP_BINARIES="1";
+		;;
+	    w)
+		INSTALL_WEB_CONTROL_PANEL="1";
+		;;
+	    e)
+		PATCH_WEATHER="1";
+		;;
+	    r)
+		CRYPT_RSS_MENU="1";
+		;;
+	    k)
+		UPDATE_KERNEL="$OPTARG";
+		;;
+	    t)
+		TARGET_BINARIES_SRC="$OPTARG";
+		;;
+	    h)
+		usage;
+		;;
+	    \?)
+		echo "Invalid option: -$OPTARG" >&2
+		exit 1
+		;;
+	    :)
+		echo "Option -$OPTARG requires an argument." >&2
+		exit 1
+		;;
+	esac
+    done
+
+}
+#!/bin/sh
+
+INSTALL_IMG="";
+VERSION="";
+INSTALL_A="";
+MENU_RSS="";
+MOVE_MENU_RSS="";
+UPDATE_BINARIES="";
+INSTALL_CB3PP_BINARIES="";
+INSTALL_WEB_CONTROL_PANEL="";
+MENU_RSS_DS="";
+MENU_RSS="";
+PATCH_WEATHER="";
+RTDMOD_DIR="../.."
+GIT_REPO=" /udir/cbadescu/mediaplayer/rtdmod";
+SVN_REPO="/udir/cbadescu/mediaplayer/svn/eboda-hd-for-all-500";
+OPENSSL_CMD="openssl enc -aes-128-ecb -e -K 6D2856375E6C2D3933352E31644B6C35 -iv 0"
+CRYPT_RSS_MENU="";
+TARGET_BINARIES_SRC="";
+debug=1;
+UPDATE_KERNEL="";
+
+DIR=`dirname $0`
+DIR=`realpath ${DIR}`
+. ${DIR}/lib.sh
+
+
+parse_args "$@";
+if [ "X${INSTALL_IMG}" = "X" ]; then usage; exit 1; fi
+if [ "X${VERSION}" = "X" ]; then usage; exit 1; fi
+INSTALL_IMG=`realpath ${INSTALL_IMG}`
+
+IMAGE_DIR=/tmp/outdir$$
+ROOT_DIR=/tmp/outdir$$.root
+ETC_DIR=/tmp/outdir$$.etc
+
+mkdir ${IMAGE_DIR} ${ETC_DIR}
+
+
+RTDMOD_DIR=${DIR}/../..
+echo "Using TMPDIR ${IMAGE_DIR}";
+
+
+
+check_prequisites ${INSTALL_IMG} ${RTDMOD_DIR}
+
+unpack_img ${INSTALL_IMG} ${IMAGE_DIR}
+
+unpack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
+patch_root ${ROOT_DIR} ${UPDATE_BINARIES}
+if [ "X${MENU_RSS}" != "X" ]
+then
+    patch_root_ims_menu ${MENU_RSS}
+fi
+if [ "X${MENU_RSS_DS}" != "X" ]
+then
+    patch_root_ims_menu_ds ${MENU_RSS_DS}
+fi
+if [ "X${PATCH_WEATHER}" != "X" ]
+then
+    patch_root_ims_weather 
+fi
+
+if [ "X${TARGET_BINARIES_SRC}" != "X" ]
+then
+    copy_target_binaries 
+fi
+
+
+pack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
+
+unpack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+patch_etc ${ETC_DIR}
+if [ "X${MENU_RSS}" != "X" ]
+then
+    patch_etc_ims_menu ${MENU_RSS}
+fi
+if [ "X${MENU_RSS_DS}" != "X" ]
+then
+    patch_etc_ims_menu_ds ${MENU_RSS_DS}
+fi
+
+
+pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+
+if [ "X${UPDATE_KERNEL}" != "X" ]
+then
+    update_kernel
+fi
+
+
+
+pack_img ${INSTALL_IMG}.patched ${IMAGE_DIR}
+#rm -r ${OUT_DIR}*
