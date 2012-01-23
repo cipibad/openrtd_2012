@@ -1,0 +1,65 @@
+
+This is OpenRTD project aiming a simple environment to patch any RTD1073 firmware and make it a easy to use Linux device
+
+
+* OpenRTD [0/4]
+  - [ ] New Packages [0/6]
+    - [ ] Streaming Feeds [0/4]
+      - [ ] vb6Scripts
+      - [ ] rssEx
+      - [ ] xLive
+      - [ ] xVod
+    - [ ] IMS package
+      will install new IMS menu containing zero version of Streaming feeds
+    - [ ] Web Control Panel
+    - [ ] Rss Control Panel
+    - [ ] nzbget
+    - [ ] opkg
+  - [ ] Opkg [0/1]
+    - [ ] buildroot offer option to create opkgs
+  - [ ] Control Panel [0/2]
+    - [ ] Web [0/6]
+      - [ ] mini_fo [0/3]
+	- [ ] show options
+	- [ ] create .mini_fo_overmount
+	- [ ] continue start-up script
+      - [ ] opkg [0/2]
+	- [ ] install package
+	- [ ] update
+      - [ ] phpfm
+      - [ ] transmission [0/3]
+	- [ ] start/stop/enable/disable
+	- [ ] configedit via php
+	- [ ] webItfLink
+      - [ ] rclocal editor
+      - [ ] timezone,ntp
+    - [ ] RSS [0/5]
+      - [ ] mini_fo
+      - [ ] opkg [0/2]
+	- [ ] install package
+	- [ ] update
+      - [ ] transmission [0/1]
+	- [ ] start/stop/enable/disable
+      - [ ] sleep
+	- [ ] smarted menu
+	- [ ] video/audio rendered patch
+      - [ ] timezone,ntp
+  - [ ] Scripting [0/2]
+    - [ ] Firmware patching [0/5]
+      - [ ] IMS patch
+	(linked with Streaming feeds & lighttpd & php)
+      - [ ] Kernel
+      - [ ] Filesystem
+      - [ ] Weather patch
+      - [ ] install_a patch
+    - [ ] Startup [0/2]
+      - [ ] wait something in /tmp/ramfs/volumes
+      - [ ] if something found, check .mini_fo_overmount [0/4]
+	- [ ] if found, do overmount
+	- [ ] mark overmount on-going
+	- [ ] pivot_root
+	- [ ] startapps
+
+
+
+

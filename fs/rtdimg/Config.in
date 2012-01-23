@@ -1,0 +1,121 @@
+config BR2_TARGET_ROOTFS_RTDIMG
+  bool "install.img"
+  help
+    Build an install.img specific to Realtek based mediaplayers
+
+if BR2_TARGET_ROOTFS_RTDIMG
+
+  config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_FW_PATH
+    string "Path to original firmware file install.img"
+
+
+  config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_INSTALL
+    bool "Overwrite install_a from firmware"
+
+  if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_INSTALL
+
+    choice
+      prompt "New install_a"
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_INSTALL
+        bool "Overwrite with E-boda install_a"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_MEDE8ER_INSTALL
+        bool "Overwrite with Mede8er install_a"	
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_INSTALL
+        bool "Other install_a"
+    endchoice
+
+    if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_INSTALL
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_INSTALL_PATH
+        string "Path to new install_a"
+
+
+    endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_INSTALL
+
+  endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_INSTALL
+
+
+choice
+  prompt "Overwrite RSS Menu"
+
+  config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_NO_OVERWRITE_RSSMENU
+    bool "Keep original RSS menu"
+
+
+  config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU
+    bool "IMS RSS menu"
+
+  if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU
+
+    choice
+      prompt "New rss menu" 
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_RSSMENU
+        bool "Overwrite with E-boda menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_ACRYAN_RSSMENU
+        bool "Overwrite with ACRyan menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OPLAY_RSSMENU
+        bool "Overwrite with Asus O!Play menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EGREAT_RSSMENU
+        bool "Overwrite with Egreat menu"
+ 
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU
+        bool "Other rss menu"
+    endchoice
+      
+    if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU
+  
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU_PATH
+      string "Path to new rss menu"
+
+
+    endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU
+
+  endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU
+
+  config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU_DS
+    bool "DS RSS menu"
+
+  if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU_DS
+
+    choice
+      prompt "New DS rss menu"
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_RSSMENU_DS
+        bool "Overwrite with E-boda DS menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_ACRYAN_RSSMENU_DS
+        bool "Overwrite with ACRyan DS menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OPLAY_RSSMENU_DS
+        bool "Overwrite with Asus O!Play DS menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EGREAT_RSSMENU_DS
+        bool "Overwrite with Egreat DS menu"
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU_DS
+       	bool "Other DS rss menu"
+    endchoice
+
+    if BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU_DS
+
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU_PATH_DS
+        string "Path to new rss DS menu"
+
+
+    endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OTHER_RSSMENU_DS
+    config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_ENCRYPT_RSSMENU_DS
+      bool "Encrypt DSS menu"
+
+  endif #BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_RSSMENU_DS
+
+endchoice   
+
+
+config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_MOVE_RSS_MENU
+  bool "Move menu.rss to writable partition (useful during development)"
+
+config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_PATCH_WEATHER
+  bool "Patch the weather files(add Africa)"
+
+
+endif #BR2_TARGET_ROOTFS_RTDIMG
+

@@ -1,0 +1,604 @@
+#!/bin/sh
+
+#
+# Unpack img
+# 
+# @param path to image file
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+#
+unpack_img()
+{
+    IMAGE_FILE=$1;
+    OUT_DIR=$2;
+    cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+    tar xf ${IMAGE_FILE};if [ $? -ne 0 ]; then  echo "Cannot unpack image ${IMAGE_FILE}"; exit 120; fi
+    echo "File install.img unpacked in ${OUT_DIR}";
+    return 0;
+}
+
+#
+# Unpack root image
+# 
+# @param path to dir containing root image
+# @param path to output dir
+# @param TEA key
+# @return 0 if OK, error code otherwise
+#
+unpack_root()
+{
+    PACKAGE2_DIR=$1;
+    OUT_DIR=$2;
+    KEY=$3;
+    
+    if [ -f ${PACKAGE2_DIR}/squashfs1.upg ]
+    then
+	echo "We have encrypted squashfs image, decrypting";
+	tea -d -i ${PACKAGE2_DIR}/squashfs1.upg -o ${PACKAGE2_DIR}/squashfs1.img -k ${KEY}
+ 	if [ $? -ne 0 ]; then echo "Cannot decrypt ${PACKAGE2_DIR}/squashfs1.upg"; exit 210; fi
+	echo "Squashfs image decrypted";
+    fi
+    
+    if [ -f ${PACKAGE2_DIR}/squashfs1.img ]
+    then
+	echo "We have squashfs image, unpacking in ${OUT_DIR}";
+	${RTDMOD_DIR}/unsquashfs -d  ${OUT_DIR} ${PACKAGE2_DIR}/squashfs1.img;
+ 	if [ $? -ne 0 ]; then echo "Cannot unpack squashfs image"; exit 230; fi
+	echo "Squashfs image unpacked";
+    fi
+    if [ -f ${PACKAGE2_DIR}/yaffs2_1.img ]
+    then
+	if [ ! -d ${OUT_DIR} ]; then mkdir ${OUT_DIR}; fi
+	cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+	${RTDMOD_DIR}/unyaffs ${PACKAGE2_DIR}/yaffs2_1.img;
+ 	if [ $? -ne 0 ]; then echo "Cannot unpack yaffs image"; exit 250; fi
+	cd -
+	echo "Yaffs image unpacked";
+    fi
+    return 0;
+}
+
+
+copy_target_binaries()
+{
+    TARGET_BINARIES_SRC=$1
+    ROOT_DIR=$2;
+    echo "Copying files from ${TARGET_BINARIES_SRC} to ${ROOT_DIR}"
+    #sync -av --ignore-existing ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
+    rsync -a --exclude var ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
+    
+}
+
+
+#
+# Patch root image
+# 
+# @param path to dir containing root image
+# @return 0 if OK, error code otherwise
+#
+patch_root()
+{
+    ROOT_DIR=$1;
+
+    echo "Patching root in ${ROOT_DIR}"
+    cd ${ROOT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${ROOT_DIR} not found"; exit 310; fi
+    
+    echo -n 'Creating overmount directories ...'
+#make root directories for overmounts
+    rm -f opt; #some firmwares have a symlink here
+
+    rm -f media; #some firmwares have a symlink here
+    mkdir media; 
+
+    mkdir newroot; 
+
+    mkdir cb3pp; # cb3pp directory for cipibad apps
+    mkdir ewcp; # ewcp directory for web/rss control panel interface
+    mkdir opt; # and opt for other people to play
+
+    mkdir rss_ex; ln -s ../etc/translate/rss usr/local/bin/rss; # and rss_ex requirements
+    mkdir xVoD; #xVoD streaming scripts
+    mkdir scripts; # vb6 streaming scripts
+    mkdir xLive; # xLive streaming scripts
+
+
+    mkdir utilities; # who knows ... just better be there
+    echo 'done'
+    
+#add root home in passwd
+    echo -n 'Adding root home in passwd ...'
+    sed -i -e '/^root/c\
+root::0:0:root:/usr/local/etc/root:/bin/sh' etc/passwd;
+    echo 'done'
+
+#patch samba script to export both HDD partitions and all mounts (USB?)
+    echo -n 'Patching samba startup scripts ...'
+
+    if [ -f usr/local/bin/package/script/configsamba ]
+    then
+	sed -i -e '/\/tmp\/package\/script\/samba-security/i\
+addmountpointtosambaconf ext3 /tmp/hdd/root/' usr/local/bin/package/script/configsamba;
+	
+	sed -i -e '/mountpoint=$(cat \/proc\/mounts|grep $l |cut -d" " -f 2)/c\
+mountpoint=$(cat /proc/mounts|grep $l | head -n 1 | cut -d" " -f 2)' usr/local/bin/package/script/configsamba;
+    fi
+    echo 'done'
+
+#sometimes we used to replace ttf font to get some space
+#seems noot needed after changing to squashfs
+# just keep it here some more time for refference
+#    cp  ${SVN_REPO}/src/${SIMPLE_VERSION}/Resource/*.TTF usr/local/bin/Resource 
+
+
+#prepare timezone modification in system profile
+    echo -n '/etc/profile for timezone ...'
+    sed -i -e '/export TZ=CST+0:00:00/a\
+if [ -f /usr/local/etc/TZ ]\
+then\
+. /usr/local/etc/TZ\
+fi' etc/profile;
+    echo 'done'
+
+
+#setting default IP address in case DvdPlayer not starting
+    echo -n 'Setting default IP address ...'
+    echo 'ifconfig eth0 192.168.1.2 netmask 255.255.0.0
+' >> etc/init.d/rcS
+    echo 'done'
+
+
+#shutdown script
+    echo -n 'Creating and hooking shutdown script ...'
+    cat > etc/init.d/rcK <<EOF
+#!/bin/sh
+[ -f /usr/local/etc/rcK ] && /usr/local/etc/rcK>/dev/console
+/bin/umount -a -r
+/sbin/swapoff -a
+EOF
+    chmod +x etc/init.d/rcK
+
+    sed -i -e '1a\
+[ -f /usr/local/etc/rcK ] && /usr/local/etc/rcK' usr/sbin/pppoe-stop
+    echo 'done'
+
+
+#new http services
+    echo -n 'Patching /etc/services and /etc/inet.d ...'
+##inetd.conf
+    sed -i -e '$a\
+www-scripts    stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /scripts\
+www-rssEx      stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /rss_ex/www\
+www-xLive      stream  tcp     nowait  www-data        /sbin/httpd httpd -i -h /xLive' etc/inetd.conf
+# fi
+
+   sed -i -e 's/#telnet/telnet/' etc/inetd.conf
+
+#services.conf
+    sed -i -e '$a\
+http3           83/tcp          www-scripts www-scripts-http  # HyperText Transfer Protocol\
+http4           84/tcp          www-rssEx www-rssEx-http  # HyperText Transfer Protocol\
+http5           85/tcp          www-xLive www-xLive-http  # HyperText Transfer Protocol' etc/services
+echo 'done'
+
+
+
+
+}
+
+
+
+patch_root_ims_weather()
+{
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+    echo FIXME
+
+    cp ${SVN_REPO}/src/${VERSION}/map/* usr/local/bin/IMS_Modules/Weather/scripts/map/
+
+}
+
+
+
+
+#
+# Pack root image
+# 
+# @param path to dir containing root image
+# @param path to output dir
+# @param TEA key
+# @return 0 if OK, error code otherwise
+#
+pack_root()
+{
+    PACKAGE2_DIR=$1;
+    IN_DIR=$2;
+    KEY=$3;
+    echo "Packing root now from ${IN_DIR} to ${PACKAGE2_DIR}"
+    if [ -f ${PACKAGE2_DIR}/squashfs1.img ]
+    then
+	echo "Found squashfs1.img, creating filesystem"
+	rm ${PACKAGE2_DIR}/squashfs1.img
+	cd ${IN_DIR} 
+	${RTDMOD_DIR}/mksquashfs * ${PACKAGE2_DIR}/squashfs1.img -b 65536 -no-progress
+ 	if [ $? -ne 0 ]; then echo "Cannot create squashfs1.img"; exit 300; fi
+	echo "squashfs1.img created"
+	if [ -f ${PACKAGE2_DIR}/squashfs1.upg ]
+	then
+	    echo "Found squashfs1.img, crypting filesystem"
+	    rm ${PACKAGE2_DIR}/squashfs1.upg;
+	    ${RTDMOD_DIR}/tea -e -i ${PACKAGE2_DIR}/squashfs1.img -o ${PACKAGE2_DIR}/squashfs1.upg -k ${KEY}
+ 	    if [ $? -ne 0 ]; then echo "Cannot encrypt ${PACKAGE2_DIR}/squashfs1.upg"; exit 300; fi
+	    rm ${PACKAGE2_DIR}/squashfs1.img;
+	    echo "squashfs1.upg crypted"
+	fi
+    fi
+    if [ -f ${PACKAGE2_DIR}/yaffs2_1.img ]
+    then
+	echo "We have yaffs image, packing";
+	rm ${PACKAGE2_DIR}/yaffs2_1.img
+	${RTDMOD_DIR}/mkyaffs2image ${IN_DIR} ${PACKAGE2_DIR}/yaffs2_1.img
+ 	if [ $? -ne 0 ]; then echo "Cannot create yaffs2_1.img"; exit 300; fi
+    fi
+    return 0;
+}
+
+
+
+#
+# Unpack /usr/local/etc image
+# 
+# @param path to dir containing image
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+unpack_etc()
+{
+    PACKAGE2_DIR=$1;
+    OUT_DIR=$2;
+    echo "Unpacking ${PACKAGE2_DIR}/usr.local.etc.tar.bz2 to ${IN_DIR}"
+    cd ${OUT_DIR}; if [ $? -ne 0 ]; then echo "Out dir ${OUT_DIR} not found"; exit 110; fi
+    tar jxf ${PACKAGE2_DIR}/usr.local.etc.tar.bz2
+    echo "Unpacking finished"
+}
+
+patch_etc()
+{
+    ETC_DIR=$1;
+    echo "Pathing etc dir in ${ETC_DIR}"
+    cd ${ETC_DIR}; if [ $? -ne 0 ]; then "Out dir ${ETC_DIR} not found"; exit 110; fi
+#make home for root
+    mkdir root
+    echo 'PATH=/cb3pp/bin:$PATH
+TERM=xterm
+export PATH TERM' >  root/.profile
+    
+#rss_ex
+    ln -s  /rss_ex translate
+
+#cipibad start-up script
+    echo '#!/bin/sh
+
+
+#now wait for 30*3 seconds to get 
+
+n=1;
+mini_fo_dir="";
+
+while [ 1 ]
+do
+   for i in `ls -1 /tmp/ramfs/volumes/`
+   do
+     if [ -d /tmp/ramfs/volumes/$i/.rtd_mini_fo_dir ]
+     then
+        echo "#We found our place"
+        mini_fo_dir=/tmp/ramfs/volumes/$i/.rtd_mini_fo_dir;
+        break;
+     fi
+    done
+    if [ "X${mini_fo_dir}" == "X" ]
+    then
+      echo "#waiting for known volume"
+      sleep 3
+      let n+=1
+      [ $n -gt 10 ] && break # 30 secound should be enough
+    else
+      break
+    fi
+done
+
+if [ "X${mini_fo_dir}" == "X" ]
+then
+    echo no known volume found, nothing to do from here
+    echo User need to set it from Control Panel
+else
+    echo Known volume found: ${mini_fo_dir}
+    mount_point=/newroot
+    mount -t mini_fo -o base=/,sto=${mini_fo_dir} / ${mount_point}
+
+
+    cb3pp_startup=/cb3pp/etc/init.d/rcS 
+    
+     standard startup
+    [ -f $cb3pp_startup ] && chroot ${mount_point} /bin/sh $cb3pp_startup $1
+fi
+
+'>> rccb3ppS
+    chmod +x rccb3ppS
+
+#addind my startup to standard startup procedure
+    echo '
+    [ -f /usr/local/etc/rccb3ppS ] && sh /usr/local/etc/rccb3ppS start &' >> rcS
+
+
+#system shutdown script
+    cat > rcK <<EOF
+#!/bin/sh
+[ -f /usr/local/etc/rccb3ppK ] && sh /usr/local/etc/rccb3ppK 
+EOF
+chmod +x rcK
+
+#cb3pp shutdown script
+cat > rccb3ppK <<EOF
+#!/bin/sh
+
+# standard stop
+[ -f /cb3pp/etc/init.d/rcS ] && /bin/sh /cb3pp/etc/init.d/rcS stop
+EOF
+chmod +x rccb3ppK
+
+#timezone ... to be updated from Web ITF
+cat > TZ <<EOF
+export TZ=GMT-3
+EOF
+
+echo 'done'
+
+}
+
+
+
+
+# pack /usr/local/etc image
+# 
+# @param path to dir containing image
+# @param path to output dir
+# @return 0 if OK, error code otherwise
+pack_etc()
+{
+    PACKAGE2_DIR=$1;
+    IN_DIR=$2;
+    echo "Packing ${IN_DIR} to ${PACKAGE2_DIR}/usr.local.etc.tar.bz2"
+    cd ${IN_DIR} || ( echo "Out dir ${IN_DIR} not found" &&  exit 110 );
+    rm ${PACKAGE2_DIR}/usr.local.etc.tar.bz2
+    tar jcf ${PACKAGE2_DIR}/usr.local.etc.tar.bz2 *
+    echo "Packing finished"
+}
+
+patch_image()
+{
+    IMAGE_DIR=$1;
+#updade install_a if the case
+
+#patch size in configuration.xml
+
+#patch img name .. not sure
+#sed -i -e 's#package2/squashfs1.upg#package2/squashfs1.img#g' configuration.xml  
+
+}
+
+update_kernel()
+{
+    cp ${UPDATE_KERNEL}/vmlinux.bin ${PACKAGE2_DIR}/vmlinux.develop.avhdd.mars.nand.bin
+    if [ $? -ne 0 ]; then echo "Error updating kernel";
+    else echo "Kernel updated OK";
+    fi
+
+}
+
+pack_img()
+{
+    IMAGE_FILE=$1;
+    IN_DIR=$2;
+    echo "Packing ${IN_DIR} to ${IMAGE_FILE}"
+    cd ${IN_DIR}; if [ $? -ne 0 ]; then echo "In dir ${IN_DIR} not found"; exit 110; fi
+    tar cf ${IMAGE_FILE} * ; if [ $? -ne 0 ]; then  echo "Cannot pack image ${IMAGE_FILE}"; exit 120; fi
+    echo "Packing finished"
+    return 0;
+
+}
+
+
+usage()
+{
+    echo 'Usage: patch.sh OPTIONS
+
+    Patches an original Realtek based mediaplayer firmware.
+    Full description of script is here: http://URL_TO_DO
+
+    Options:
+
+    -i PATH \t\t\t path to an install.img file
+    -a [eboda|mede8er] \t\t overwrite install_a file with the one from specified firmware
+    -m [eboda|acryan|oplay|egreat] 
+\t\t\t\t overwrite the menu.rss file with one from specified firmware containing new IMS
+    -n \t\t\t\t move menu,rss to a read-write location
+    -d [eboda] \t\t\t overwrite menu.rss with one from specified firmware containing new DS
+    -e \t\t\t\t patch weather files
+    -r crypt rss menu
+    -t rsync target binaryes
+    -h \t\t\t\t this info
+    ';
+}
+
+#
+# Checking if everything is available
+# 
+# @param path to image file
+# @return 0 if OK, error code otherwise
+#
+check_prequisites()
+{
+
+    IMAGE_FILE=$1;
+    RTDMOD_DIR=$2;    
+# check source file
+    if [ ! -f ${IMAGE_FILE} ]; then  echo "Original install.img not found (${IMAGE_FILE})";  exit 10; fi
+    echo "File ${IMAGE_FILE} found";
+    
+#cheking yaffs tools
+    if [ ! -f ${RTDMOD_DIR}/unyaffs ]; then  echo "${RTDMOD_DIR}/unyaffs not found" &&  exit 20; fi
+    if [ ! -f ${RTDMOD_DIR}/mkyaffs2image ]; then echo "${RTDMOD_DIR}/mkyaffs2image not found" &&  exit 30; fi
+    echo "yaffs tools are present";
+
+
+#cheking squashfs tools;
+    if [ ! -f ${RTDMOD_DIR}/unsquashfs ]; then echo "${RTDMOD_DIR}/unsquashfs not found" &&  exit 40; fi
+    if [ ! -f ${RTDMOD_DIR}/mksquashfs ]; then echo "${RTDMOD_DIR}/mksquashfs not found" &&  exit 50; fi
+    echo "squashfs tools are present";
+
+#cheking tea;
+    #TODO if [ !  -f ${RTDMOD_DIR}/tea ]; then echo "${RTDMOD_DIR}/tea not found" &&  exit 60; fi
+    echo "tea is present";
+
+    return 0;
+}
+
+INSTALL_IMG="";
+INSTALL_IMG="";
+INSTALL_A="";
+MENU_RSS="";
+MENU_RSS_DS="";
+PATCH_WEATHER="";
+CRYPT_RSS_MENU="";
+TARGET_BINARIES_SRC="";
+UPDATE_KERNEL="";
+parse_args()
+{
+
+
+    while getopts "i:a:m:nd:ert:k:h" opt; do
+	case $opt in
+	    i)
+		INSTALL_IMG="$OPTARG";
+		;;
+	    a)
+		INSTALL_A="$OPTARG";
+		;;
+	    m)
+		MENU_RSS="$OPTARG";
+		;;
+	    n)
+		MOVE_MENU_RSS="1";
+		;;
+	    d)
+		MENU_RSS_DS="$OPTARG";
+		;;
+	    e)
+		PATCH_WEATHER="1";
+		;;
+	    r)
+		CRYPT_RSS_MENU="1";
+		;;
+	    t)
+		TARGET_BINARIES_SRC="$OPTARG";
+		;;
+	    k)
+		UPDATE_KERNEL="$OPTARG";
+		;;
+	    h)
+		usage;
+		;;
+	    \?)
+		echo "Invalid option: -$OPTARG" >&2
+		exit 1
+		;;
+	    :)
+		echo "Option -$OPTARG requires an argument." >&2
+		exit 1
+		;;
+	esac
+    done
+
+}
+
+
+
+
+#
+# main
+#
+
+IMAGE_DIR=/tmp/outdir$$
+ROOT_DIR=/tmp/outdir$$.root
+ETC_DIR=/tmp/outdir$$.etc
+
+mkdir ${IMAGE_DIR} ${ETC_DIR}
+
+
+RTDMOD_DIR=`dirname $0`;
+RTDMOD_DIR=`realpath $RTDMOD_DIR`;
+RTDMOD_DIR="${RTDMOD_DIR}/rtdimg"
+
+echo "Using TMPDIR ${IMAGE_DIR}";
+echo "Using RTDMOD_DIR ${RTDMOD_DIR}";
+
+
+
+
+
+
+parse_args "$@";
+if [ "X${INSTALL_IMG}" = "X" ]; then echo "We need at least path to an install.img file"; usage; exit 1; fi
+
+check_prequisites ${INSTALL_IMG} ${RTDMOD_DIR}
+
+unpack_img ${INSTALL_IMG} ${IMAGE_DIR}
+
+unpack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
+
+if [ "X${TARGET_BINARIES_SRC}" != "X" ]
+then
+    copy_target_binaries ${TARGET_BINARIES_SRC} ${ROOT_DIR}
+fi
+
+patch_root ${ROOT_DIR}
+
+pack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
+
+unpack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+patch_etc ${ETC_DIR}
+
+if [ "X${MENU_RSS}" != "X" ]
+then
+    patch_etc_ims_menu ${MENU_RSS}
+fi
+if [ "X${MENU_RSS_DS}" != "X" ]
+then
+    patch_etc_ims_menu_ds ${MENU_RSS_DS}
+fi
+pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+
+
+if [ "X${UPDATE_KERNEL}" != "X" ]
+then
+    update_kernel
+fi
+
+pack_img ${INSTALL_IMG}.patched ${IMAGE_DIR}
+
+
+echo End of script;
+exit 0;
+
+
+
+
+
+
+
+
