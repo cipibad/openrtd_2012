@@ -4,11 +4,7 @@
 #
 #############################################################
 
-ifeq ($(BR2_TARGET_ROOTFS_RTDIMG_PLAYER_EBODA_HD_FOR_ALL_500_MINI),y)
-#set default params
-endif
-
-ifeq ($(BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM),y)
+ifeq ($(BR2_TARGET_ROOTFS_RTDIMG),y)
 #read other params here
 RTDIMG_OPTS := -i $(BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_FW_PATH)
 
@@ -83,9 +79,7 @@ ifeq ($(BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_ENCRYPT_RSSMENU_DS),y)
 RTDIMG_OPTS += -e
 endif
 
-ifeq ($(BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_INSTALL_TARGET_PACKAGES),y)
 RTDIMG_OPTS += -t $(TARGET_DIR)
-endif
 
 ifeq ($(BR2_LINUX_KERNEL),y)
 RTDIMG_OPTS += -k $(BINARIES_DIR)
@@ -93,7 +87,7 @@ endif
 
 
 
-SCRIPT := ../rtdmod/scripts/firmware/patch.sh
+SCRIPT := support/scripts/build-install-img
 define ROOTFS_RTDIMG_CMD
 	$(SCRIPT) $(RTDIMG_OPTS) 
 endef

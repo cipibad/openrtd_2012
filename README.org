@@ -3,12 +3,14 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 
 
 * OpenRTD [0/4]
-  - [ ] New Packages [0/5]
-    - [ ] Streamind Feeds [0/4]
+  - [ ] New Packages [0/6]
+    - [ ] Streaming Feeds [0/4]
       - [ ] vb6Scripts
       - [ ] rssEx
       - [ ] xLive
       - [ ] xVod
+    - [ ] IMS package
+      will install new IMS menu containing zero version of Streaming feeds
     - [ ] Web Control Panel
     - [ ] Rss Control Panel
     - [ ] nzbget
