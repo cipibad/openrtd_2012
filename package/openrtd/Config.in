@@ -1,0 +1,9 @@
+
+menu "OpenRTD specific packages"
+source "package/openrtd/vb6scripts/Config.in"
+source "package/openrtd/rssEx/Config.in"
+source "package/openrtd/xLive/Config.in"
+source "package/openrtd/xVod/Config.in"
+source "package/openrtd/WebControlPanel/Config.in"
+source "package/openrtd/rssControlPanel/Config.in"
+endmenu

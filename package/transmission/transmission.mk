@@ -16,6 +16,9 @@ TRANSMISSION_DEPENDENCIES = \
 TRANSMISSION_CONF_OPT = \
 	--disable-libnotify \
 	--enable-lightweight
+TRANSMISSION_CONF_ENV = \
+	CFLAGS+="-I$(TARGET_DIR)/usr/include" \
+	LDFLAGS+="-L$(TARGET_DIR)/usr/lib"	
 
 define TRANSMISSION_INIT_SCRIPT_INSTALL
 	[ -f $(TARGET_DIR)/etc/init.d/S92transmission ] || \

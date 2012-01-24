@@ -63,9 +63,16 @@ copy_target_binaries()
 {
     TARGET_BINARIES_SRC=$1
     ROOT_DIR=$2;
+    BUILD_DIR=${TARGET_BINARIES_SRC}/../build
     echo "Copying files from ${TARGET_BINARIES_SRC} to ${ROOT_DIR}"
     #sync -av --ignore-existing ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
     rsync -a --exclude var ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
+    echo "    depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR}/lib/modules -r 2.6.12.6-VENUS"
+
+    /sbin/depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR} -r 2.6.12.6-VENUS
+    
+    sed -i -e 's#^#/lib/modules/2.6.12.6-VENUS/#'   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep
+    rm   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep.bin
     
 }
 
