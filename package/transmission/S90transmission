@@ -1,0 +1,60 @@
+#!/bin/sh
+
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+NAME=transmission-daemon
+DAEMON=`which $NAME`
+DAEMON_OPTS="-g /etc/transmission/"
+
+
+
+test -x $DAEMON || exit 0
+
+if [ -z "$1" ] ; then
+    case `echo "$0" | sed 's:^.*/\(.*\):\1:g'` in
+        S??*) rc="start" ;;
+        K??*) rc="stop" ;;
+        *) rc="usage" ;;
+    esac
+else
+    rc="$1"
+fi
+
+case "$rc" in
+    start)
+	echo "Starting transmission client: $NAME"
+	nice -n 19 $DAEMON $DAEMON_OPTS
+        ;;
+    stop)
+        if [ -n "`pidof $NAME`" ]; then
+            echo "Stopping transmission client: $NAME"
+              killall $NAME 2> /dev/null
+        fi
+	n=1
+        while [ -n "`pidof $NAME`" ]; do
+            echo $NAME still alive, sleeping 3
+            sleep 3
+	    [ $n -gt 10 ] && break
+	    let n+=1
+        done
+        ;;
+    status)
+	if [ -n "`pidof $NAME`" ]; then
+	    echo $NAME is running
+	    exit 0
+	else
+	    echo $NAME is stopped
+	    exit 1
+	fi
+	;;
+    restart)
+        "$0" stop
+        sleep 1
+        "$0" start
+        ;;
+    *)  
+        echo "Usage: $0 (start|stop|restart|status|usage)"
+        ;;
+esac
+
+exit 0
