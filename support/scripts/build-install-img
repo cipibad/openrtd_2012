@@ -148,10 +148,12 @@ fi' etc/profile;
 
 
 #setting default IP address in case DvdPlayer not starting
-    echo -n 'Setting default IP address ...'
-    echo 'ifconfig eth0 192.168.1.2 netmask 255.255.0.0
-' >> etc/init.d/rcS
-    echo 'done'
+#following may make issue is same net on wifi ....
+#waiting feedback from doggie waf 
+#     echo -n 'Setting default IP address ...'
+#     echo 'ifconfig eth0 192.168.1.2 netmask 255.255.0.0
+# ' >> etc/init.d/rcS
+#     echo 'done'
 
 
 #shutdown script
@@ -287,11 +289,14 @@ export PATH TERM' >  root/.profile
 #rss_ex
     ln -s  /rss_ex translate
 
+###################################
+# if new kernel mini_fo
+###################################
 #cipibad start-up script
     echo '#!/bin/sh
 
 
-#now wait for 30*3 seconds to get 
+#now wait for 30*3 seconds to get one known disk
 
 n=1;
 mini_fo_dir="";
@@ -336,6 +341,18 @@ fi
 
 '>> rccb3ppS
     chmod +x rccb3ppS
+
+
+###################################
+# else we should keep old start
+###################################
+
+
+###################################
+# this is common
+###################################
+
+
 
 #addind my startup to standard startup procedure
     echo '
