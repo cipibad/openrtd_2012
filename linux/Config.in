@@ -21,8 +21,8 @@ choice
 	prompt "Kernel version"
 	default BR2_LINUX_KERNEL_3_1
 
-config BR2_LINUX_KERNEL_3_1
-	bool "3.1.5"
+config BR2_LINUX_KERNEL_3_2
+	bool "3.2.4"
 
 config BR2_LINUX_KERNEL_SAME_AS_HEADERS
 	bool "Same as toolchain kernel headers"
@@ -74,7 +74,7 @@ config BR2_LINUX_KERNEL_CUSTOM_GIT_VERSION
 
 config BR2_LINUX_KERNEL_VERSION
 	string
-	default "3.1.5" if BR2_LINUX_KERNEL_3_1
+	default "3.2.4" if BR2_LINUX_KERNEL_3_2
 	default BR2_DEFAULT_KERNEL_HEADERS if BR2_LINUX_KERNEL_SAME_AS_HEADERS
 	default BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE if BR2_LINUX_KERNEL_CUSTOM_VERSION
 	default "custom" if BR2_LINUX_KERNEL_CUSTOM_TARBALL
