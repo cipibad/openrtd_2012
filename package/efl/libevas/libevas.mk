@@ -65,7 +65,8 @@ endif
 
 ifeq ($(BR2_PACKAGE_LIBEVAS_X11_GLX),y)
 LIBEVAS_CONF_OPT += --enable-gl-xlib
-LIBEVAS_DEPENDENCIES += xproto_glproto xlib_libX11
+LIBEVAS_DEPENDENCIES += xproto_glproto xlib_libX11 xlib_libXrender \
+			xlib_libXext libeet
 endif
 
 ifeq ($(BR2_PACKAGE_LIBEVAS_XCB),y)
@@ -95,6 +96,14 @@ endif
 ifeq ($(BR2_PACKAGE_LIBEVAS_SDL_GL),y)
 LIBEVAS_CONF_OPT += --enable-gl-sdl
 LIBEVAS_DEPENDENCIES += sdl
+# configure script forgets to check for eet / fill this out
+LIBEVAS_CONF_ENV += \
+	GL_EET_CFLAGS='-I$(STAGING_DIR)/usr/include/eet-1' \
+	GL_EET_LIBS='-leet'
+endif
+
+ifeq ($(BR2_PACKAGE_LIBEVAS_GL),y)
+LIBEVAS_DEPENDENCIES += mesa3d libeet
 endif
 
 ifeq ($(BR2_PACKAGE_LIBEVAS_GLES_SGX),y)

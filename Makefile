@@ -26,6 +26,12 @@
 # Set and export the version string
 export BR2_VERSION:=2012.02-git
 
+# Check for minimal make version (note: this check will break at make 10.x)
+MIN_MAKE_VERSION=3.81
+ifneq ($(firstword $(sort $(MAKE_VERSION) $(MIN_MAKE_VERSION))),$(MIN_MAKE_VERSION))
+$(error You have make '$(MAKE_VERSION)' installed. GNU make >= $(MIN_MAKE_VERSION) is required)
+endif
+
 # This top-level Makefile can *not* be executed in parallel
 .NOTPARALLEL:
 
@@ -299,6 +305,8 @@ include package/Makefile.in
 
 all: world
 
+include support/dependencies/dependencies.mk
+
 # We also need the various per-package makefiles, which also add
 # each selected package to TARGETS if that package was selected
 # in the .config file.
@@ -369,7 +377,7 @@ $(BUILD_DIR)/buildroot-config/auto.conf: $(CONFIG_DIR)/.config
 
 prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
-world: prepare dependencies dirs $(BASE_TARGETS) $(TARGETS_ALL)
+world: prepare dirs dependencies $(BASE_TARGETS) $(TARGETS_ALL)
 
 $(O)/toolchainfile.cmake:
 	@echo -en "\

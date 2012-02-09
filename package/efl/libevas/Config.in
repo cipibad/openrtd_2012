@@ -47,7 +47,6 @@ comment "libevas backends"
 
 config BR2_PACKAGE_LIBEVAS_BUFFER
 	bool "libevas buffer backend"
-	depends on BR2_PACKAGE_XORG7
 	help
 	  This enables the software buffer rendering engine. There is
 	  no hardware assist here.
@@ -80,10 +79,13 @@ config BR2_PACKAGE_LIBEVAS_SDL
 config BR2_PACKAGE_LIBEVAS_SDL_GL
 	bool "libevas SDL OpenGL backend"
 	depends on BR2_PACKAGE_SDL_X11
-	select BR2_PACKAGE_XPROTO_GLPROTO
+	depends on BR2_PACKAGE_XSERVER_xorg # mesa needs big X
 	help
 	  This is the SDL OpenGL engine that uses SDL library
 	  and OpenGL to render. This may be hardware accelerated.
+
+comment "SDL OpenGL backend needs modular X.org and X11 support in SDL"
+	depends on !(BR2_PACKAGE_SDL_X11 && BR2_PACKAGE_XSERVER_xorg)
 
 config BR2_PACKAGE_LIBEVAS_X11
 	bool "libevas X11 backend"
@@ -96,8 +98,10 @@ config BR2_PACKAGE_LIBEVAS_X11
 
 config BR2_PACKAGE_LIBEVAS_X11_GLX
 	bool "libevas X11 GLX backend"
-	depends on BR2_PACKAGE_XORG7
+	depends on BR2_PACKAGE_XSERVER_xorg # mesa needs big X
 	select BR2_PACKAGE_XLIB_LIBX11
+	select BR2_PACKAGE_XLIB_LIBXRENDER
+	select BR2_PACKAGE_XLIB_LIBXEXT
 	select BR2_PACKAGE_XPROTO_GLPROTO
 	help
 	  This enables the OpenGL X11 rendering engine that renders
@@ -116,7 +120,7 @@ config BR2_PACKAGE_LIBEVAS_XCB
 
 config BR2_PACKAGE_LIBEVAS_XCB_GLX
 	bool "libevas XCB GLX backend"
-	depends on BR2_PACKAGE_XORG7
+	depends on BR2_PACKAGE_XSERVER_xorg # mesa needs big X
 	select BR2_PACKAGE_LIBXCB
 	select BR2_PACKAGE_XCB_UTIL
 	select BR2_PACKAGE_XCB_PROTO
@@ -131,7 +135,9 @@ choice
 	default BR2_PACKAGE_LIBEVAS_GL
 
 config BR2_PACKAGE_LIBEVAS_GL
-       bool "generic OpenGL"
+	bool "generic OpenGL"
+	select BR2_PACKAGE_MESA3D
+	select BR2_PACKAGE_LIBEET
 
 config BR2_PACKAGE_LIBEVAS_GLES_SGX
        bool "OpenGL-ES SGX"
