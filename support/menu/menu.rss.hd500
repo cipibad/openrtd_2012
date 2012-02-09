@@ -1,0 +1,512 @@
+<?xml version='1.0'  encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+	<onEnter>
+		showIdle();
+	</onEnter>
+  <script>
+    PPSIndex =0;
+    YoukuIndex =0;
+    ThunderIndex =0;
+    NewsIndex =0;
+    HddIndex =0;
+    xliveIndex =1;
+    RssExIndex =2;
+    YoutubeIndex =3;
+    PicasaIndex =4;
+    WeatherIndex =5;
+    FlickrIndex =6;
+    CPIndex =7;
+  </script>
+	
+<mediaDisplay name=photoView
+   itemBackgroundColor=0:0:0
+   backgroundColor=0:0:0
+   
+   sideTopHeightPC=0
+   sideBottomHeightPC=0   
+      
+  rowCount=2 
+  columnCount=5
+  fontSize=16
+  
+  itemPerPage=10
+  itemBorderPC=0
+  itemOffsetXPC=13
+  itemGapXPC=0
+  itemGapYPC=0
+  itemWidthPC=18
+  itemHeightPC=37
+    
+  centerYPC=20
+  centerHeightPC=50 
+  
+  showHeader="no"  
+  showDefaultInfo="no"	
+	>
+<idleImage> image/POPUP_LOADING_01.png </idleImage>
+<idleImage> image/POPUP_LOADING_02.png </idleImage>
+<idleImage> image/POPUP_LOADING_03.png </idleImage>
+<idleImage> image/POPUP_LOADING_04.png </idleImage>
+<idleImage> image/POPUP_LOADING_05.png </idleImage>
+<idleImage> image/POPUP_LOADING_06.png </idleImage>
+<idleImage> image/POPUP_LOADING_07.png </idleImage>
+<idleImage> image/POPUP_LOADING_08.png </idleImage>
+
+<backgroundDisplay>
+    <image  offsetXPC=0 offsetYPC=0 widthPC=100 heightPC=100>
+      image/mele/backgd.jpg
+    </image>  
+</backgroundDisplay> 
+    
+    <image  offsetXPC=0 offsetYPC=2.8 widthPC=100 heightPC=15.6>
+      image/mele/rss_title.jpg
+    </image>
+
+    <text  offsetXPC=19.2 offsetYPC=8 widthPC=35 heightPC=10 fontSize=20 backgroundColor=-1:-1:-1 foregroundColor=255:255:255>
+      Internet Channels
+    </text>
+
+<itemDisplay>
+	<image offsetXPC=0 offsetYPC=0 widthPC=100 heightPC=100 >
+		<script>
+				getItemInfo(getQueryItemIndex(), "media:thumbnail");
+		</script>
+	</image>
+	<text offsetXPC=3 offsetYPC=78 widthPC=94 heightPC=8  align=center  backgroundColor=-1:-1:-1 fontSize=13>
+		<foregroundColor>
+			<script>
+				if (getDrawingItemState() == "focus")
+					"255:255:255";
+				else
+					"121:121:121";
+			</script>
+		</foregroundColor>	
+		<script>
+			getItemInfo(getQueryItemIndex(), "title");
+		</script>
+	</text>	
+</itemDisplay>
+ 
+</mediaDisplay>    	
+<!--
+<item>
+<title>pandora</title>
+<image>pandora_logo.jpg</image>
+<onClick>
+             nexturl=null;
+             allowed = pandora_checkIP();
+             if( allowed == "true" )
+			 {
+                    if (pandora_partnerLogin() == "true")
+					{
+                             devl = pandora_deviceLogin();
+                             if (devl == "true")
+							 { 
+                                      nexturl = "rss_file://./IMS_Modules/Pandora/pandora_stationlist.rss";
+                              } 
+							  else if (devl == "false")
+							  { 
+                                       nexturl = "rss_file://./IMS_Modules/Pandora/pandora_welcome.rss";
+                              }
+							  else
+							  { 
+                                       popup_msg("an unexpected error happened, please try again later");
+                              }
+                     }
+					 else
+					 { 
+					 						
+                              popup_msg("an unexpected error happened, please try again later");
+                     }
+            }
+			else if (allowed == "false")
+			{ 
+                     popup_msg("pandora is not available in your region");
+             }
+			 else
+			 {
+                     popup_msg("an unexpected error happened, please try again later");
+             }
+             nexturl;
+</onClick> 
+</item>
+
+<item>
+<title>Internet Channels </title>
+<link>rss_file://./scripts/video_guide.rss</link>
+<media:thumbnail url="image/internetvideo.jpg" width="120" height="90" />
+<mediaDisplay name=threePartsView showNestedHeader=no showDefaultInfo="no"/>
+</item>
+-->
+
+<channel>
+	<title>Internet Channels</title>
+	<link>./scripts/menu.rss</link>
+	<menu>main menu</menu>	
+
+<!--<PPSItem>
+<title>PPS</title>
+<link>rss_file://./IMS_Modules/PPS/scripts/pps.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == PPSIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            "IMS_Modules/PPS/image/pps_focus.jpg";
+          }
+          else{
+            "IMS_Modules/PPS/image/pps_unfocus.jpg";
+            }
+      }
+    </script>
+ </media:thumbnail>
+
+</PPSItem>-->
+
+<ThunderItem>
+<title>$[THUNDER]</title>
+<link>rss_file://./IMS_Modules/ThunderT/scripts/thunderT_guide.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == ThunderIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            "./IMS_Modules/ThunderT/image/thunder_focus.bmp";
+          }
+          else{
+            "./IMS_Modules/ThunderT/image/thunder_unfocus.bmp";
+            }
+      }
+    </script>
+ </media:thumbnail>
+</ThunderItem>
+
+<item>
+    <title>vb6ro netMedia</title>^M
+      <media:thumbnail  width="120" height="90" >
+        <script>
+          if (getQueryItemIndex() == HddIndex)
+          {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+          "./scripts/image/hdd_focus.jpg";
+          }
+          else{
+          "./scripts/image/hdd_unfocus.jpg";
+          }
+          }
+        </script>
+      </media:thumbnail>
+    <link>http://localhost:82/scripts/menu.rss</link>^M
+  </item>^M
+  
+    <item>
+      <title>xLive</title>
+      <link>http://localhost:82/xLive/menu.rss</link>
+      <media:thumbnail  width="120" height="90" >
+        <script>
+          if (getQueryItemIndex() == xliveIndex)
+          {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+          "./scripts/image/xlive_focus.jpg";
+          }
+          else{
+          "./scripts/image/xlive_unfocus.jpg";
+          }
+          }
+        </script>
+      </media:thumbnail>
+    </item>
+    <item>
+      <title>Rss Ex</title>
+        <link>rss_file://./rss/menuEx.rss</link>
+      <media:thumbnail  width="120" height="90" >
+        <script>
+          if (getQueryItemIndex() == RssExIndex)
+          {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+          "./scripts/image/rssex_focus.jpg";
+          }
+          else{
+          "./scripts/image/rssex_unfocus.jpg";
+          }
+          }
+        </script>
+      </media:thumbnail>
+            </item>
+
+<item>
+<title>YouTube</title>
+<link>rss_file://./IMS_Modules/Youtube/youtube.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == YoutubeIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Youtube/youtube_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Youtube/youtube_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</item>
+
+<item>
+<title>Picasa</title>
+<link>picasa://</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == PicasaIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Picasa/picasa_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Picasa/picasa_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+<mediaDisplay name=photoView backgroundImage="IMS_Modules/Picasa/E92_335iCoupe_3-4drvrFrnt.jpg"
+rowCount=3 columnCount=7 viewAreaXPC = 2 sideColorBottom=0:0:0 sideColorTop=0:0:0>
+<idleImage> image/POPUP_LOADING_01.png </idleImage>
+<idleImage> image/POPUP_LOADING_02.png </idleImage>
+<idleImage> image/POPUP_LOADING_03.png </idleImage>
+<idleImage> image/POPUP_LOADING_04.png </idleImage>
+<idleImage> image/POPUP_LOADING_05.png </idleImage>
+<idleImage> image/POPUP_LOADING_06.png </idleImage>
+<idleImage> image/POPUP_LOADING_07.png </idleImage>
+<idleImage> image/POPUP_LOADING_08.png </idleImage>
+</mediaDisplay>
+<submenu name=$[IMS_SEARCH]  description="Search all the Photos using keyword">
+<url>http://picasaweb.google.com/data/feed/api/all?q=%s&amp;max-results=48&amp;thumbsize=288</url>
+<nextPageItemCount> 48 </nextPageItemCount>
+<input name=$[IMS_KEYWORD]> keyword </input>
+</submenu>
+
+<submenu name=$[IMS_LOGIN]  description="Login in Picasa using User Name">
+<url>http://picasaweb.google.com/data/feed/api/user/%s?kind=album </url>
+<input name="keyword"> keyword </input>
+</submenu>
+
+</item>
+
+
+<!-- <item> -->
+<!-- <title>$[IMS_NEWS]</title> -->
+<!-- <link>rss_file://./IMS_Modules/News/scripts/news.rss</link> -->
+<!-- <media:thumbnail  width="120" height="90" > -->
+<!--     <script> -->
+<!--      if (getQueryItemIndex() == 2)  -->
+<!--      { -->
+<!--           state=getDrawingItemState(); -->
+<!--           if( state == "focus" ){ -->
+<!--             img = "./IMS_Modules/News/image/news_focus.jpg"; -->
+<!--           } -->
+<!--           else{ -->
+<!--             img = "./IMS_Modules/News/image/news_unfocus.jpg"; -->
+<!--             } -->
+<!--       } -->
+<!--       img; -->
+<!--     </script> -->
+<!--  </media:thumbnail> -->
+<!-- </item> -->
+
+<item>
+<title>$[WEATHER]</title>
+<link>rss_file://./IMS_Modules/Weather/scripts/map/myfavorites.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == WeatherIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Weather/image/weather_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Weather/image/weather_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</item>
+
+
+<item>
+<title>xVoD</title>
+<link>http://localhost:82/xVoD/php/index.php</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == FlickrIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./scripts/image/xvod_focus.jpg";
+          }
+          else{
+            img = "./scripts/image/xvod_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</item>
+
+
+    <item>
+      <title>ControlPanel</title>
+      <link>http://localhost:82/cgi-bin/ewcp-rss.cgi</link>
+      <media:thumbnail  width="120" height="90" >
+        <script>
+          if (getQueryItemIndex() == CPIndex) 
+          {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+          "./scripts/image/CP_focus.jpg";
+          }
+          else{
+          "./scripts/image/CP_unfocus.jpg";
+          }
+          }
+        </script>
+      </media:thumbnail>
+    </item>
+
+
+<YoukuItem>
+<title>$[YOUKU]</title>
+<link>rss_file://./IMS_Modules/Youku/youku.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == YoukuIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Youku/youku_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Youku/youku_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</YoukuItem>
+
+
+<SinaItem>
+<title>$[IMS_SINA]</title>
+<link>rss_file://./IMS_Modules/Sina/scripts/sinatv.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == SinaIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Sina/image/SinaTV_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Sina/image/SinaTV_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</SinaItem>
+
+<CNNItem>
+<title>CNN</title>
+<link>rss_file://./IMS_Modules/CNN/scripts/podCast.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == CNNIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/CNN/image/podCast_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/CNN/image/podCast_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</CNNItem>
+
+<BESTVItem>
+<title>$[BESTV]</title>
+<link>rss_file://./IMS_Modules/BesTV/scripts/bestv_guide.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == BESTVIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/BesTV/image/BesTV_logo_focus.bmp";
+          }
+          else{
+            img = "./IMS_Modules/BesTV/image/BesTV_logo_unfocus.bmp";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</BESTVItem>
+
+<PODCASTItem>
+<title>PodCast</title>
+<link>rss_file://./IMS_Modules/podCast/scripts/podCast.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == PODCASTIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/podCast/image/podCast_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/podCast/image/podCast_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</PODCASTItem>
+
+
+<WoxterItem>
+<title>Woxter Music</title>
+<link>rss_file://./IMS_Modules/Woxter/Woxter.rss</link>
+<media:thumbnail  width="120" height="90" >
+    <script>
+     if (getQueryItemIndex() == WoxterIndex) 
+     {
+          state=getDrawingItemState();
+          if( state == "focus" ){
+            img = "./IMS_Modules/Woxter/woxter_focus.jpg";
+          }
+          else{
+            img = "./IMS_Modules/Woxter/woxter_unfocus.jpg";
+            }
+      }
+      img;
+    </script>
+ </media:thumbnail>
+</WoxterItem>
+
+
+</channel>
+</rss>
+

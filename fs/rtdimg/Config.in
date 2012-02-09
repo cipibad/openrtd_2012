@@ -51,8 +51,10 @@ choice
     choice
       prompt "New rss menu" 
 
-      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_RSSMENU
-        bool "Overwrite with E-boda menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_HD500_RSSMENU
+        bool "Overwrite with E-boda hd500 menu"
+      config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_EBODA_HD600_RSSMENU
+        bool "Overwrite with E-boda hd600 menu"
       config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_ACRYAN_RSSMENU
         bool "Overwrite with ACRyan menu"
       config BR2_TARGET_ROOTFS_RTDIMG_PLAYER_CUSTOM_OVERWRITE_OPLAY_RSSMENU

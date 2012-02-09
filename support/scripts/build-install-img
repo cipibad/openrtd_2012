@@ -194,7 +194,26 @@ echo 'done'
 
 }
 
+patch_root_ims_menu()
+{
 
+    MENU_RSS=$1;
+
+
+
+    if [ "X${MOVE_MENU_RSS}" = "X" ]
+    then
+	cp ${MENU_DIR}/menu.rss.${MENU_RSS} usr/local/bin/scripts/menu.rss
+	echo "Using eboda menu from ${MENU_DIR}/menu.rss.${MENU_RSS}"
+	
+	[ -d usr/local/bin/scripts/image ] || mkdir -p usr/local/bin/scripts/image
+	cp ${MENU_DIR}/image/* usr/local/bin/scripts/image/
+	
+	echo "Using eboda menu images from ${MENU_DIR}/image"
+    fi
+
+
+}
 
 patch_root_ims_weather()
 {
@@ -448,7 +467,7 @@ usage()
 
     -i PATH \t\t\t path to an install.img file
     -a [eboda|mede8er] \t\t overwrite install_a file with the one from specified firmware
-    -m [eboda|acryan|oplay|egreat] 
+    -m [hd500|hd600|acryan|oplay|egreat] 
 \t\t\t\t overwrite the menu.rss file with one from specified firmware containing new IMS
     -n \t\t\t\t move menu,rss to a read-write location
     -d [eboda] \t\t\t overwrite menu.rss with one from specified firmware containing new DS
@@ -565,7 +584,9 @@ mkdir ${IMAGE_DIR} ${ETC_DIR}
 
 
 RTDMOD_DIR=`dirname $0`;
-RTDMOD_DIR=`realpath $RTDMOD_DIR`;
+RTDMOD_DIR=`realpath $RTDMOD_DIR/..`;
+
+MENU_DIR="${RTDMOD_DIR}/menu"
 RTDMOD_DIR="${RTDMOD_DIR}/rtdimg"
 
 echo "Using TMPDIR ${IMAGE_DIR}";
@@ -592,21 +613,19 @@ fi
 
 patch_root ${ROOT_DIR}
 
+if [ "X${MENU_RSS}" != "X" ]
+then
+    patch_root_ims_menu ${MENU_RSS}
+fi
+if [ "X${MENU_RSS_DS}" != "X" ]
+then
+    patch_root_ims_menu_ds ${MENU_RSS_DS}
+fi
+
 pack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
 
 unpack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
 patch_etc ${ETC_DIR}
-
-if [ "X${MENU_RSS}" != "X" ]
-then
-    patch_etc_ims_menu ${MENU_RSS}
-fi
-if [ "X${MENU_RSS_DS}" != "X" ]
-then
-    patch_etc_ims_menu_ds ${MENU_RSS_DS}
-fi
-pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
-
 
 if [ "X${UPDATE_KERNEL}" != "X" ]
 then
