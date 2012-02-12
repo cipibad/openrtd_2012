@@ -1,6 +1,8 @@
 
 menu "OpenRTD specific packages"
 
+source "package/openrtd/nzbget/Config.in"
+
 menu "Streaming feeds"
 source "package/openrtd/vb6scripts/Config.in"
 source "package/openrtd/rssEx/Config.in"

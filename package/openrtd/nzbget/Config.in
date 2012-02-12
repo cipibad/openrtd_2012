@@ -1,0 +1,7 @@
+config BR2_PACKAGE_NZBGET
+	bool "nbzget"
+	help
+                NZBGet is a command-line based binary newsgrabber for nzb files, written in C++.
+		
+		http://nzbget.sourceforge.net/Main_Page
+

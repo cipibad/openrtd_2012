@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBPAR2
+	bool "libpar2"
+	help
+                Libpar2 is a library for manipulating par2 files
+
+                http://sourceforge.net/projects/parchive/

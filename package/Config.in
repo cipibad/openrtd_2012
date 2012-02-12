@@ -253,6 +253,7 @@ menu "Compression and decompression"
 source "package/libarchive/Config.in"
 source "package/lzo/Config.in"
 source "package/zlib/Config.in"
+source "package/libpar2/Config.in"
 endmenu
 
 menu "Crypto"
