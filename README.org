@@ -3,7 +3,7 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 
 
 * OpenRTD [0/4]
-  - [ ] New Packages [0/6]
+  - [-] New Packages [1/6]
     - [ ] Streaming Feeds [0/4]
       - [ ] vb6Scripts
       - [ ] rssEx
@@ -13,7 +13,9 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
       will install new IMS menu containing zero version of Streaming feeds
     - [ ] Web Control Panel
     - [ ] Rss Control Panel
-    - [ ] nzbget
+    - [X] nzbget
+    - [ ] rar
+    - [ ] nrg2iso
     - [ ] opkg
   - [ ] Opkg [0/1]
     - [ ] buildroot offer option to create opkgs
@@ -58,7 +60,7 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 	- [ ] if found, do overmount
 	- [ ] mark overmount on-going
 	- [ ] pivot_root
-	- [ ] startapps
+	- [ ] re/startapps
 
 
 

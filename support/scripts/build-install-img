@@ -71,8 +71,8 @@ copy_target_binaries()
 
     /sbin/depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR} -r 2.6.12.6-VENUS
     
-    sed -i -e 's#^#/lib/modules/2.6.12.6-VENUS/#'   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep
-    rm   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep.bin
+    ##sed -i -e 's#^#/lib/modules/2.6.12.6-VENUS#'   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep
+    ##rm   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep.bin
     
 }
 
@@ -350,6 +350,21 @@ else
     echo Known volume found: ${mini_fo_dir}
     mount_point=/newroot
     mount -t mini_fo -o base=/,sto=${mini_fo_dir} / ${mount_point}
+
+    #mount if real dirs on ext partition
+    if [ -d /tmp/hdd/root/movie ]
+    then
+      mount -o bind /tmp/hdd/root/movie /tmp/hdd/volumes/HDD1/movie
+    fi
+    if [ -d /tmp/hdd/root/music ]
+    then
+      mount -o bind /tmp/hdd/root/music /tmp/hdd/volumes/HDD1/music
+    fi
+    if [ -d /tmp/hdd/root/image ]
+    then
+      mount -o bind /tmp/hdd/root/image /tmp/hdd/volumes/HDD1/image
+    fi
+
 
 
     cb3pp_startup=/cb3pp/etc/init.d/rcS 
@@ -631,6 +646,8 @@ if [ "X${UPDATE_KERNEL}" != "X" ]
 then
     update_kernel
 fi
+
+pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
 
 pack_img ${INSTALL_IMG}.patched ${IMAGE_DIR}
 
