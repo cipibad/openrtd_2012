@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PHPFM
+	bool "phpfm"
+	help
+		phpFileManager is a complete filesystem management tool on a single file.		
+
+		http://phpfm.sourceforge.net

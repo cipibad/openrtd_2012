@@ -4,7 +4,7 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NAME=transmission-daemon
 DAEMON=`which $NAME`
-DAEMON_OPTS="-g /etc/transmission/"
+DAEMON_OPTS="-g /usr/local/etc/transmission/"
 
 
 

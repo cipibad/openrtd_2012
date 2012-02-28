@@ -59,18 +59,21 @@ unpack_root()
 }
 
 
-copy_target_binaries()
+copy_root_target_binaries()
 {
     TARGET_BINARIES_SRC=$1
     ROOT_DIR=$2;
     BUILD_DIR=${TARGET_BINARIES_SRC}/../build
     echo "Copying files from ${TARGET_BINARIES_SRC} to ${ROOT_DIR}"
-    #sync -av --ignore-existing ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
-    rsync -a --exclude var ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
-    echo "    depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR}/lib/modules -r 2.6.12.6-VENUS"
-
-    /sbin/depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR} -r 2.6.12.6-VENUS
-    
+    rsync -av --exclude var --exclude usr/local/etc ${TARGET_BINARIES_SRC}/* ${ROOT_DIR}
+    if [ "X${UPDATE_KERNEL}" != "X" ]
+    then
+	echo "New kernel, running depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR}/lib/modules -r 2.6.12.6-VENUS"
+	/sbin/depmod -ae -F ${BUILD_DIR}/linux-custom/System.map -b ${ROOT_DIR} -r 2.6.12.6-VENUS
+    else
+	echo "No new kernel, no depmod"
+    fi
+    #
     ##sed -i -e 's#^#/lib/modules/2.6.12.6-VENUS#'   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep
     ##rm   ${ROOT_DIR}/lib/modules/2.6.12.6-VENUS/modules.dep.bin
     
@@ -312,10 +315,14 @@ export PATH TERM' >  root/.profile
 # if new kernel mini_fo
 ###################################
 #cipibad start-up script
-    echo '#!/bin/sh
+
+    if [ "X${UPDATE_KERNEL}" != "X" ]
+    then
+	echo "New kernel, mini_fo ready"
+	echo '#!/bin/sh
 
 
-#now wait for 30*3 seconds to get one known disk
+#now wait for max 30*3 seconds to get one known disk
 
 n=1;
 mini_fo_dir="";
@@ -351,6 +358,37 @@ else
     mount_point=/newroot
     mount -t mini_fo -o base=/,sto=${mini_fo_dir} / ${mount_point}
 
+    cb3pp_startup=/cb3pp/etc/init.d/rcS 
+    
+     standard startup
+    [ -f $cb3pp_startup ] && chroot ${mount_point} /bin/sh $cb3pp_startup $1
+fi
+'>> rccb3ppS
+    chmod +x rccb3ppS
+    else
+	echo "No new kernel, no mini_fo"
+    fi
+
+echo '
+#now wait for max 30*3 seconds to get internal HDD
+
+n=1;
+mini_fo_dir="";
+
+while [ 1 ]
+do
+     if [ -d /tmp/hdd/volumes/HDD1 ]
+     then
+        echo "Found internal HDD"
+        break
+     fi
+      echo "#waiting for known volume"
+      sleep 3
+      let n+=1
+      [ $n -gt 10 ] && break # 30 secound should be enough
+done
+    if [ -d /tmp/hdd/volumes/HDD1 ]
+    then
     #mount if real dirs on ext partition
     if [ -d /tmp/hdd/root/movie ]
     then
@@ -364,17 +402,15 @@ else
     then
       mount -o bind /tmp/hdd/root/image /tmp/hdd/volumes/HDD1/image
     fi
+    if [ -d /tmp/hdd/root/downloads ]
+    then
+      mount -o bind /tmp/hdd/root/downloads /tmp/hdd/volumes/HDD1/downloads
+    fi
+    fi
 
 
-
-    cb3pp_startup=/cb3pp/etc/init.d/rcS 
-    
-     standard startup
-    [ -f $cb3pp_startup ] && chroot ${mount_point} /bin/sh $cb3pp_startup $1
-fi
-
-'>> rccb3ppS
-    chmod +x rccb3ppS
+'>> rccb3ppS1
+    chmod +x rccb3ppS1
 
 
 ###################################
@@ -390,7 +426,8 @@ fi
 
 #addind my startup to standard startup procedure
     echo '
-    [ -f /usr/local/etc/rccb3ppS ] && sh /usr/local/etc/rccb3ppS start &' >> rcS
+    [ -f /usr/local/etc/rccb3ppS ] && sh /usr/local/etc/rccb3ppS start &
+    [ -f /usr/local/etc/rccb3ppS1 ] && sh /usr/local/etc/rccb3ppS1 start &' >> rcS
 
 
 #system shutdown script
@@ -418,6 +455,16 @@ echo 'done'
 
 }
 
+
+
+copy_etc_target_binaries()
+{
+    TARGET_BINARIES_SRC=$1
+    ETC_DIR=$2;
+    echo "Copying files from ${TARGET_BINARIES_SRC} to ${ETC_DIR}"
+    rsync -av  ${TARGET_BINARIES_SRC}/usr/local/etc/* ${ETC_DIR}
+    
+}
 
 
 
@@ -623,7 +670,7 @@ unpack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
 
 if [ "X${TARGET_BINARIES_SRC}" != "X" ]
 then
-    copy_target_binaries ${TARGET_BINARIES_SRC} ${ROOT_DIR}
+    copy_root_target_binaries ${TARGET_BINARIES_SRC} ${ROOT_DIR}
 fi
 
 patch_root ${ROOT_DIR}
@@ -640,14 +687,23 @@ fi
 pack_root ${IMAGE_DIR}/package2 ${ROOT_DIR}
 
 unpack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+
 patch_etc ${ETC_DIR}
+
+if [ "X${TARGET_BINARIES_SRC}" != "X" ]
+then
+    copy_etc_target_binaries ${TARGET_BINARIES_SRC} ${ETC_DIR}
+fi
+
+
+pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
+
 
 if [ "X${UPDATE_KERNEL}" != "X" ]
 then
     update_kernel
 fi
 
-pack_etc ${IMAGE_DIR}/package2 ${ETC_DIR}
 
 pack_img ${INSTALL_IMG}.patched ${IMAGE_DIR}
 

@@ -21,15 +21,14 @@ TRANSMISSION_CONF_ENV = \
 	LDFLAGS+="-L$(TARGET_DIR)/usr/lib"	
 
 define TRANSMISSION_INIT_SCRIPT_INSTALL_ORIGINAL
-	[ -f $(TARGET_DIR)/etc/init.d/S92transmission ] || \
-		$(INSTALL) -m 0755 -D package/transmission/S92transmission \
-			$(TARGET_DIR)/etc/init.d/S92transmission
+	$(INSTALL) -m 0755 -D package/transmission/S92transmission \
+		$(TARGET_DIR)/etc/init.d/S92transmission
 endef
 
 define TRANSMISSION_INIT_SCRIPT_INSTALL_OPENRTD
-	[ -f $(TARGET_DIR)/etc/init.d/S90transmission ] || \
-		$(INSTALL) -m 0755 -D package/transmission/S90transmission \
-			$(TARGET_DIR)/etc/init.d/S90transmission
+	$(INSTALL) -m 0755 -D package/transmission/S90transmission \
+		$(TARGET_DIR)/etc/init.d/S90transmission
+	$(INSTALL) -m 0755 -D package/transmission/settings.json $(TARGET_DIR)/usr/local/etc/transmission/settings.json
 endef
 
 

@@ -57,15 +57,14 @@ LIGHTTPD_CONF_OPT += --without-lua
 endif
 
 define LIGHTTPD_INIT_SCRIPT_INSTALL
-	[ -f $(TARGET_DIR)/etc/init.d/S80lighttpd ] || \
-		$(INSTALL) -m 0755 -D package/lighttpd/S80lighttpd \
-			$(TARGET_DIR)/etc/init.d/S80lighttpd
+	$(INSTALL) -m 0755 -D package/lighttpd/S80lighttpd \
+		$(TARGET_DIR)/etc/init.d/S80lighttpd
 endef
 
 define LIGHTTPD_CONF_INSTALL
-	[ -f $(TARGET_DIR)/etc/lighttpd ] || \
-		cp -a package/lighttpd/lighttpd \
-			$(TARGET_DIR)/etc/
+	[ -d $(TARGET_DIR)/usr/local/etc ] || mkdir -p $(TARGET_DIR)/usr/local/etc
+	cp -a package/lighttpd/lighttpd \
+		$(TARGET_DIR)/usr/local/etc/
 endef
 
 

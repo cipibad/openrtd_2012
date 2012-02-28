@@ -1,0 +1,6 @@
+config BR2_PACKAGE_UNRAR
+	bool "unrar"
+	help
+		RAR is a powerful archive manager
+
+		http://www.rarlab.com/

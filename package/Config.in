@@ -10,6 +10,8 @@ source "package/multimedia/Config.in"
 
 menu "Compressors and decompressors"
 source "package/bzip2/Config.in"
+source "package/unrar/Config.in"
+
 if BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
 source "package/gzip/Config.in"
 endif
@@ -242,6 +244,8 @@ endmenu
 endif
 source "package/microperl/Config.in"
 source "package/php/Config.in"
+source "package/phpfm/Config.in"
+
 source "package/python/Config.in"
 source "package/ruby/Config.in"
 source "package/tcl/Config.in"

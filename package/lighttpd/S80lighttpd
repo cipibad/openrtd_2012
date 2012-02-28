@@ -4,7 +4,7 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NAME=lighttpd
 DAEMON=`which $NAME`
-DAEMON_OPTS="-f /etc/lighttpd/lighttpd.conf"
+DAEMON_OPTS="-f /usr/local/etc/lighttpd/lighttpd.conf"
 
 
 
