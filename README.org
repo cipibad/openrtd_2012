@@ -3,7 +3,7 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 
 
 * OpenRTD [0/4]
-  - [-] New Packages [1/6]
+  - [-] New Packages [5/12]
     - [ ] Streaming Feeds [0/4]
       - [ ] vb6Scripts
       - [ ] rssEx
@@ -14,13 +14,18 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
     - [ ] Web Control Panel
     - [ ] Rss Control Panel
     - [X] nzbget
-    - [ ] rar
+    - [ ] unrar
+      - [ ] to cross compile
+    - [X] trasnmission
+    - [X] lighttpd
+    - [X] php
+    - [X] phpfm
     - [ ] nrg2iso
     - [ ] opkg
   - [ ] Opkg [0/1]
     - [ ] buildroot offer option to create opkgs
-  - [ ] Control Panel [0/2]
-    - [ ] Web [0/6]
+  - [-] Control Panel [0/2]
+    - [-] Web [1/6]
       - [ ] mini_fo [0/3]
 	- [ ] show options
 	- [ ] create .mini_fo_overmount
@@ -28,7 +33,7 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
       - [ ] opkg [0/2]
 	- [ ] install package
 	- [ ] update
-      - [ ] phpfm
+      - [X] phpfm
       - [ ] transmission [0/3]
 	- [ ] start/stop/enable/disable
 	- [ ] configedit via php
@@ -46,7 +51,7 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 	- [ ] smarted menu
 	- [ ] video/audio rendered patch
       - [ ] timezone,ntp
-  - [ ] Scripting [0/2]
+  - [-] Scripting [0/2]
     - [ ] Firmware patching [0/5]
       - [ ] IMS patch
 	(linked with Streaming feeds & lighttpd & php)
@@ -54,13 +59,16 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
       - [ ] Filesystem
       - [ ] Weather patch
       - [ ] install_a patch
-    - [ ] Startup [0/2]
-      - [ ] wait something in /tmp/ramfs/volumes
-      - [ ] if something found, check .mini_fo_overmount [0/4]
-	- [ ] if found, do overmount
-	- [ ] mark overmount on-going
-	- [ ] pivot_root
-	- [ ] re/startapps
+    - [-] Startup [1/2]
+      - [ ] mini_fo
+	- [ ] wait something in /tmp/ramfs/volumes
+	- [ ] if something found, check .mini_fo_overmount [0/4]
+	  - [ ] if found, do overmount
+	  - [ ] mark overmount on-going
+	  - [ ] pivot_root
+	  - [ ] re/startapps
+      - [X] normal[1/1]
+	- [X] extfs bindmount
 
 
 
