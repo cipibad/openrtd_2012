@@ -9,7 +9,7 @@ UNRAR_SITE = http://www.rarlab.com/rar
 UNRAR_INSTALL_STAGING = NO
 UNRAR_INSTALL_TARGET = YES
 define UNRAR_BUILD_CMDS
-	$(MAKE) -C $(@D) -f makefile.unix
+	$(MAKE) -C $(@D) -f makefile.unix CXX="$(TARGET_CXX)" STRIP="$(TARGET_STRIP)"
 endef
 
 define UNRAR_INSTALL_TARGET_CMDS
