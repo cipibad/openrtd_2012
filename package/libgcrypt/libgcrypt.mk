@@ -10,7 +10,7 @@ LIBGCRYPT_SITE = ftp://ftp.gnupg.org/gcrypt/libgcrypt
 LIBGCRYPT_INSTALL_STAGING = YES
 
 LIBGCRYPT_CONF_ENV = \
-	ac_cv_sys_symbol_underscore=no
+	ac_cv_sys_symbol_underscore=no CFLAGS=-I$(STAGING_DIR)/usr/include/ LDFLAGS=-L$(STAGING_DIR)/usr/lib/
 LIBGCRYPT_CONF_OPT = \
 	--disable-optimization \
 	--with-gpg-error-prefix=$(STAGING_DIR)/usr

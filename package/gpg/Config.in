@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GPG
+	bool "gpg"
+	help
+	 GnuPG
+
+	 http://www.gnupg.org/download/index.en.html#gpg

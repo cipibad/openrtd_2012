@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GPGME
+	bool "gpgme"
+	select BR2_PACKAGE_LIBGPG_ERROR
+	help
+	 GnuPG Made Easy is a library designed to make access to GnuPG easier for applications	
+
+	 http://www.gnupg.org/download/index.en.html#gpgme

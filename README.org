@@ -2,8 +2,8 @@
 This is OpenRTD project aiming a simple environment to patch any RTD1073 firmware and make it a easy to use Linux device
 
 
-* OpenRTD [0/4]
-  - [-] New Packages [5/12]
+* OpenRTD tasks[0/4]
+  - [-] New Packages [7/12]
     - [ ] Streaming Feeds [0/4]
       - [ ] vb6Scripts
       - [ ] rssEx
@@ -14,14 +14,15 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
     - [ ] Web Control Panel
     - [ ] Rss Control Panel
     - [X] nzbget
-    - [ ] unrar
-      - [ ] to cross compile
+    - [X] unrar
+      - [X] to cross compile
     - [X] trasnmission
     - [X] lighttpd
     - [X] php
     - [X] phpfm
     - [ ] nrg2iso
-    - [ ] opkg
+    - [X] opkg
+      - [X] a lot of opkg dpendencies
   - [ ] Opkg [0/1]
     - [ ] buildroot offer option to create opkgs
   - [-] Control Panel [0/2]
@@ -68,8 +69,38 @@ This is OpenRTD project aiming a simple environment to patch any RTD1073 firmwar
 	  - [ ] pivot_root
 	  - [ ] re/startapps
       - [X] normal[1/1]
-	- [X] extfs bindmount
+	- [X] extfs bindmount for movie/image/music/download if found
 
 
+
+
+
+  
+* FS description
+  - /(mountpoint-ro, squashfs)
+    - usr
+      - local
+	- etc(mountpoint-rw, yaffs)
+    - tmp
+      - hdd
+	- root(ext3-rw, optional for internal HDD only)
+	- volumes
+	  - HDD1(ufsd/ntfs-rw, optional for internal HDD only
+      - usbmounts
+	- sd??(????-rw, optional for USB mounted storage)
+      - ramfs
+	- volumes (links to all mountes filesystems - except root)
+    - newroot(minifo-rw, in case is enabled from control panel)
+
+      
+
+* Startup sequence
+  - bootloader - redboot
+  - kernel - linux-2.6.12
+  - init (busybox v1.1.3)
+    
+
+	  
+	
 
 

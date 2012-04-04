@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GNUPTH
+	bool "gnupth"
+	help
+	 Pth is a very portable POSIX/ANSI-C based library for Unix platforms which provides non-preemptive priority-based scheduling for multiple threads of execution (aka ``multithreading'') inside event-driven applications
+
+	 http://www.gnu.org/software/pth/

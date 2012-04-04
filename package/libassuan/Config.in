@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBASSUAN
+	bool "libassuan"
+	help
+	 Libassuan is the IPC library used by some GnuPG related software.	
+
+	 http://www.gnupg.org/download/index.en.html#libassuan
+

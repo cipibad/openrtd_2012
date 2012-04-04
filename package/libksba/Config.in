@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBKSBA
+	bool "libksba"
+	help
+	 Libksba is a CMS and X.509 access library under development.
+
+	 http://www.gnupg.org/download/index.en.html#libksba
+
